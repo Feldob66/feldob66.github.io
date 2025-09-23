@@ -1,48 +1,63 @@
-from flask import Flask, request, Response
+from flask import Flask, request, redirect, render_template_string
 import requests
-from urllib.parse import urlparse, parse_qs
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
-def get_temu_image_from_share(share_url: str) -> str:
-    headers = {"User-Agent": "Mozilla/5.0"}
-    resp = requests.get(share_url, headers=headers, allow_redirects=True, timeout=10)
-    final_url = resp.url
-
-    parsed = urlparse(final_url)
-    params = parse_qs(parsed.query)
-
-    img_url = params.get("thumb_url") or params.get("share_img")
-    if not img_url:
-        raise ValueError("Could not find image in URL parameters")
-
-    return img_url[0]
-
 @app.route('/')
 def hello():
-    return '<h1>Hello from Felix!</h1><p>Use /scrape?url=YOUR_TEMU_SHARE_LINK</p>'
+    return 'Hello from Felix!'
 
-@app.route('/scrape')
-def scrape():
-    share_url = request.args.get("url")
-    if not share_url:
-        return Response("<p style='color:red'>Missing ?url= parameter</p>", mimetype="text/html")
+@app.route('/temu')
+def temu():
+    url = request.args.get("url")
+    if not url:
+        return "Missing ?url= parameter", 400
 
+    # Fetch Temu page
     try:
-        image_url = get_temu_image_from_share(share_url)
+        r = requests.get(url, timeout=10)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        return f"Error fetching Temu URL: {e}", 500
+
+    # Extract image
+    soup = BeautifulSoup(r.text, "html.parser")
+    img = soup.find("img", {"src": True})
+    img_url = img["src"] if img else None
+
+    if not img_url:
+        return "No image found", 404
+
+    # Detect if request is from Discord/Twitter/etc.
+    user_agent = request.headers.get("User-Agent", "").lower()
+    is_bot = any(bot in user_agent for bot in ["discord", "twitterbot", "facebook", "telegram"])
+
+    if is_bot:
+        # Return OG tags for embed preview
         html = f"""
+        <!DOCTYPE html>
         <html>
-          <head><title>Temu Image</title></head>
-          <body style="text-align:center; font-family:Arial">
-            <h2>Temu Product Image</h2>
-            <p><a href="{image_url}" target="_blank">{image_url}</a></p>
-            <img src="{image_url}" alt="Temu Product" style="max-width:90%; height:auto; border:2px solid #ccc; border-radius:12px;"/>
-          </body>
+        <head>
+            <meta property="og:title" content="Temu Product" />
+            <meta property="og:description" content="Shared from Temu" />
+            <meta property="og:image" content="{img_url}" />
+            <meta property="og:type" content="website" />
+        </head>
+        <body></body>
         </html>
         """
-        return Response(html, mimetype="text/html")
-    except Exception as e:
-        return Response(f"<p style='color:red'>Error: {e}</p>", mimetype="text/html")
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+        return html
+    else:
+        # Show image in browser
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Temu Image</title></head>
+        <body style="text-align:center; margin-top:20px;">
+            <h2>Temu Product</h2>
+            <img src="{img_url}" alt="Temu Product" style="max-width:90%; height:auto;" />
+        </body>
+        </html>
+        """
+        return html
