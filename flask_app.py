@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request, Response
 import requests
 from urllib.parse import urlparse, parse_qs
 
@@ -6,37 +6,43 @@ app = Flask(__name__)
 
 def get_temu_image_from_share(share_url: str) -> str:
     headers = {"User-Agent": "Mozilla/5.0"}
-    # Follow the redirect to the final product URL
     resp = requests.get(share_url, headers=headers, allow_redirects=True, timeout=10)
     final_url = resp.url
 
-    # Parse URL query parameters
     parsed = urlparse(final_url)
     params = parse_qs(parsed.query)
 
-    # Temu usually includes the product image in 'thumb_url' or 'share_img'
     img_url = params.get("thumb_url") or params.get("share_img")
     if not img_url:
         raise ValueError("Could not find image in URL parameters")
 
-    return img_url[0]  # parse_qs returns lists
+    return img_url[0]
 
 @app.route('/')
 def hello():
-    return 'Hello from Felix!'
+    return '<h1>Hello from Felix!</h1><p>Use /scrape?url=YOUR_TEMU_SHARE_LINK</p>'
 
 @app.route('/scrape')
 def scrape():
-    # Example: /scrape?url=https://share.temu.com/oVUcAzcleKB
     share_url = request.args.get("url")
     if not share_url:
-        return jsonify({"error": "Missing ?url= parameter"}), 400
+        return Response("<p style='color:red'>Missing ?url= parameter</p>", mimetype="text/html")
 
     try:
         image_url = get_temu_image_from_share(share_url)
-        return jsonify({"image": image_url})
+        html = f"""
+        <html>
+          <head><title>Temu Image</title></head>
+          <body style="text-align:center; font-family:Arial">
+            <h2>Temu Product Image</h2>
+            <p><a href="{image_url}" target="_blank">{image_url}</a></p>
+            <img src="{image_url}" alt="Temu Product" style="max-width:90%; height:auto; border:2px solid #ccc; border-radius:12px;"/>
+          </body>
+        </html>
+        """
+        return Response(html, mimetype="text/html")
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return Response(f"<p style='color:red'>Error: {e}</p>", mimetype="text/html")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
