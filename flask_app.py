@@ -1,8 +1,6 @@
-from flask import Flask, request
+from flask import Flask, request, render_template_string, jsonify
 import requests
 from bs4 import BeautifulSoup
-import re
-import json
 
 app = Flask(__name__)
 
@@ -14,66 +12,40 @@ def hello():
 def temu():
     url = request.args.get("url")
     if not url:
-        return "Missing ?url= parameter", 400
+        return jsonify({"error": "Missing ?url="}), 400
 
-    # Fetch Temu page
     try:
-        r = requests.get(url, timeout=10)
+        r = requests.get(url, timeout=10, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        })
         r.raise_for_status()
     except requests.RequestException as e:
-        return f"Error fetching Temu URL: {e}", 500
+        return jsonify({"error": str(e)}), 500
 
-    # Parse HTML and look for window.__INITIAL_STATE__
     soup = BeautifulSoup(r.text, "html.parser")
-    script = soup.find("script", string=re.compile("__INITIAL_STATE__"))
-    img_url = None
 
-    if script:
-        match = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*\});", script.string)
-        if match:
-            try:
-                data = json.loads(match.group(1))
-                # Walk the JSON structure to find image
-                product = data.get("productDetailV2", {}).get("productInfo", {})
-                if "cover" in product:
-                    img_url = product["cover"]
-            except Exception as e:
-                return f"Error parsing JSON: {e}", 500
+    # Use same logic that worked for you before:
+    img = soup.find("img")
+    image_url = img["src"] if img and img.get("src") else None
 
-    if not img_url:
-        return "No image found", 404
+    if not image_url:
+        return jsonify({"error": "No image found"}), 404
 
-    # Detect bots like Discord
-    user_agent = request.headers.get("User-Agent", "").lower()
-    is_bot = any(bot in user_agent for bot in ["discord", "twitterbot", "facebook", "telegram"])
-
-    if is_bot:
-        # Just Open Graph meta for Discord preview
-        html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta property="og:title" content="Temu Product" />
-            <meta property="og:description" content="Shared from Temu" />
-            <meta property="og:image" content="{img_url}" />
-            <meta property="og:type" content="website" />
-        </head>
-        <body></body>
-        </html>
-        """
-        return html
-    else:
-        # Show image page for browsers
-        html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head><title>Temu Image</title></head>
-        <body style="text-align:center; margin-top:20px;">
-            <h2>Temu Product</h2>
-            <a href="{url}" target="_blank">
-                <img src="{img_url}" alt="Temu Product" style="max-width:90%; height:auto;" />
-            </a>
-        </body>
-        </html>
-        """
-        return html
+    # HTML response with image + OG tags (Discord preview)
+    html_template = f"""
+    <!doctype html>
+    <html>
+    <head>
+        <meta property="og:title" content="Temu Product" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="{image_url}" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="{image_url}" />
+    </head>
+    <body style="text-align:center; padding:20px;">
+        <h1>Temu Product Image</h1>
+        <img src="{image_url}" style="max-width:500px;">
+    </body>
+    </html>
+    """
+    return render_template_string(html_template)
