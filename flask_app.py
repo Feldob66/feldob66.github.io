@@ -1,6 +1,8 @@
-from flask import Flask, request, redirect, render_template_string
+from flask import Flask, request
 import requests
 from bs4 import BeautifulSoup
+import re
+import json
 
 app = Flask(__name__)
 
@@ -21,20 +23,32 @@ def temu():
     except requests.RequestException as e:
         return f"Error fetching Temu URL: {e}", 500
 
-    # Extract image
+    # Parse HTML and look for window.__INITIAL_STATE__
     soup = BeautifulSoup(r.text, "html.parser")
-    img = soup.find("img", {"src": True})
-    img_url = img["src"] if img else None
+    script = soup.find("script", string=re.compile("__INITIAL_STATE__"))
+    img_url = None
+
+    if script:
+        match = re.search(r"window\.__INITIAL_STATE__\s*=\s*(\{.*\});", script.string)
+        if match:
+            try:
+                data = json.loads(match.group(1))
+                # Walk the JSON structure to find image
+                product = data.get("productDetailV2", {}).get("productInfo", {})
+                if "cover" in product:
+                    img_url = product["cover"]
+            except Exception as e:
+                return f"Error parsing JSON: {e}", 500
 
     if not img_url:
         return "No image found", 404
 
-    # Detect if request is from Discord/Twitter/etc.
+    # Detect bots like Discord
     user_agent = request.headers.get("User-Agent", "").lower()
     is_bot = any(bot in user_agent for bot in ["discord", "twitterbot", "facebook", "telegram"])
 
     if is_bot:
-        # Return OG tags for embed preview
+        # Just Open Graph meta for Discord preview
         html = f"""
         <!DOCTYPE html>
         <html>
@@ -49,14 +63,16 @@ def temu():
         """
         return html
     else:
-        # Show image in browser
+        # Show image page for browsers
         html = f"""
         <!DOCTYPE html>
         <html>
         <head><title>Temu Image</title></head>
         <body style="text-align:center; margin-top:20px;">
             <h2>Temu Product</h2>
-            <img src="{img_url}" alt="Temu Product" style="max-width:90%; height:auto;" />
+            <a href="{url}" target="_blank">
+                <img src="{img_url}" alt="Temu Product" style="max-width:90%; height:auto;" />
+            </a>
         </body>
         </html>
         """
