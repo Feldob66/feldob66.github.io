@@ -10,6 +10,38 @@
 <body>
     <h1>Hello, World!</h1>
     <p>Welcome to my project. This is a simple Hello World page!</p>
+
+    <!-- Container for Temu image URL -->
+    <p id="temu-image"></p>
+
+    <script>
+        (function() {
+            // Check if URL has a Temu link as query param ?temu=<link>
+            const urlParams = new URLSearchParams(window.location.search);
+            const temuLink = urlParams.get("temu");
+
+            if (!temuLink) return; // No Temu link, do nothing
+
+            const output = document.getElementById("temu-image");
+            output.textContent = "Fetching Temu product image...";
+
+            // Fetch the share link and follow redirects
+            fetch(temuLink, { redirect: 'follow' })
+            .then(resp => {
+                const finalUrl = resp.url;
+                const params = new URL(finalUrl).searchParams;
+                const imgUrl = params.get("thumb_url") || params.get("share_img");
+                if (imgUrl) {
+                    output.textContent = "Temu Product Image URL: " + imgUrl;
+                } else {
+                    output.textContent = "Image not found";
+                }
+            })
+            .catch(err => {
+                output.textContent = "Error fetching Temu image: " + err;
+            });
+        })();
+    </script>
 </body>
 
 </html>
