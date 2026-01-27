@@ -1,0 +1,807 @@
+/* Linktree-style CV Portfolio */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(180deg, #3a3a3f 0%, #8d0218 36%, #f68d15 100%);
+    color: #333333;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+/* Language Toggle */
+.lang-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.lang-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.lang-option {
+    color: #999;
+    transition: color 0.3s ease;
+    cursor: pointer;
+}
+
+.lang-option.active {
+    color: #667eea;
+    font-weight: 700;
+}
+
+.lang-divider {
+    margin: 0 8px;
+    color: #ddd;
+}
+
+/* Profile Section */
+.profile {
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeInDown 0.6s ease-out;
+}
+
+.avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0 auto 20px;
+    border: 4px solid white;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.profile h1 {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tagline {
+    font-size: 1em;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+}
+
+/* Links Section */
+.links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.link-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column; /* Changed to column to stack header and minigame */
+    gap: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.link-card:nth-child(1) { animation-delay: 0.1s; }
+.link-card:nth-child(2) { animation-delay: 0.2s; }
+.link-card:nth-child(3) { animation-delay: 0.3s; }
+.link-card:nth-child(4) { animation-delay: 0.4s; }
+.link-card:nth-child(5) { animation-delay: 0.5s; }
+.link-card:nth-child(6) { animation-delay: 0.6s; }
+
+a.link-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.link-card-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    transition: transform 0.2s ease;
+}
+
+.link-card-header:hover {
+    transform: translateY(-2px);
+}
+
+.link-icon {
+    font-size: 2em;
+    flex-shrink: 0;
+}
+
+.link-content {
+    flex: 1;
+    text-align: left;
+    background: rgba(200, 200, 200, 0.2);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.link-content h3 {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+}
+
+.link-content p {
+    font-size: 0.9em;
+    color: #666;
+    margin: 0;
+}
+
+/* Video Preview */
+.project-preview {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.project-preview video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.video-gif-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    cursor: pointer;
+}
+
+.video-gif-preview.active {
+    pointer-events: auto;
+}
+
+.video-gif-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    pointer-events: auto;
+}
+
+.video-play-button:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.video-play-button svg {
+    width: 40px;
+    height: 40px;
+    margin-left: 4px;
+}
+
+.video-play-button.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    animation: fadeIn 0.6s ease-out 0.7s;
+    animation-fill-mode: both;
+}
+
+footer p {
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    body {
+        padding: 20px 16px;
+    }
+    
+    .lang-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+    
+    .profile h1 {
+        font-size: 1.75em;
+    }
+    
+    .tagline {
+        font-size: 1em;
+    }
+
+    .education {
+        font-size: 0.9em;
+    }
+
+    /* Links Section */
+    .link-card {
+        padding: 16px;
+    }
+    
+    .link-icon {
+        font-size: 1.75em;
+    }
+    
+    .link-content h3 {
+        font-size: 1em;
+    }
+    
+    .link-content p {
+        font-size: 0.85em;
+    }
+
+    /* Fix minigame overflow on mobile */
+    .tryItUrselfMiniGame {
+        padding: 12px;
+        overflow-x: hidden; /* Prevent horizontal scroll */
+    }
+
+    .miniGame-container {
+        gap: 12px;
+    }
+
+    #code-mode-container .game-zone {
+        max-width: 100%;
+        padding: 12px;
+    }
+
+    #code-mode-container pre {
+        font-size: 0.75em; /* Even smaller on mobile */
+        padding: 12px;
+    }
+
+    #visual-mode-container .visual-zone {
+        max-width: 150px;
+    }
+
+    #visual-mode-container .slot {
+        width: 120px;
+        height: 120px;
+    }
+
+    .minigame-explainer p {
+        font-size: 0.85em;
+    }
+}
+
+.profile .education {
+    font-size: 0.9em;
+    color: #f68d15; /* orange */
+    margin-top: 4px;
+}
+
+.hidden {
+    display: none;
+}
+
+.tryItUrselfMiniGame {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: #f5f5f5;
+    width: 100%; /* Ensure it doesn't overflow */
+    max-width: 100%; /* Cap at parent width */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    box-sizing: border-box;
+    animation: slideDown 0.3s ease-out;
+}
+
+/* =========================================
+   MINIGAME EXPLAINER
+   ========================================= */
+
+.minigame-explainer {
+    background: linear-gradient(135deg, #667eea22 0%, #764ba233 100%);
+    border-left: 3px solid #667eea;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.minigame-explainer p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #555;
+    line-height: 1.5;
+}
+
+body.darkmode .minigame-explainer {
+    background: linear-gradient(135deg, #667eea11 0%, #764ba222 100%);
+    border-left-color: #50fa7b;
+}
+
+body.darkmode .minigame-explainer p {
+    color: #ddd;
+}
+
+/* ========================================= */
+
+.miniGame-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.miniGame-zones {
+    display: flex;
+    gap: 12px;
+}
+
+/* Game Zone with images */
+.game-zone {
+    flex: 1;
+    aspect-ratio: 1 / 1;
+    min-height: 120px;
+    border: 2px dashed #ccc;
+    border-radius: 50%;
+    padding: 8px;
+    overflow: hidden;
+}
+
+.game-piece {
+    background: white;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 6px;
+    cursor: grab;
+    text-align: center;
+    user-select: none;
+}
+
+.game-piece.dragging {
+    opacity: 0.5;
+}
+
+/* Code Zone with code */
+.code-zone {
+    flex: 1;
+    min-height: 120px;
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 8px;
+    background: #272822;
+    color: #f8f8f2;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85em;
+    overflow-x: auto;
+}
+
+.code-piece {
+    background: white;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 6px;
+    cursor: grab;
+    text-align: center;
+    user-select: none;
+}
+
+.code-piece.dragging {
+    opacity: 0.5;
+}
+
+.piece-title {
+    display: block;
+    font-size: 0.75em;
+    color: #666;
+}
+
+.project-links {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+    gap: 10px;
+}
+
+.project-btn {
+    font-size: 0.85em;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #f1f1f1;
+    color: #333;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.project-btn:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.tryItUrselfMiniGame {
+    margin-top: 16px;
+}
+
+.link-card.interactive {
+    cursor: pointer;
+}
+
+.links > * {
+    flex-shrink: 0;
+}
+
+/* =========================================
+   MERGED MINIGAME STYLES
+   ========================================= */
+
+/* Shared Styles */
+.miniGame-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 100%; /* Prevent overflow */
+}
+
+button.executeBtn {
+    margin-top: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: #50fa7b;
+    color: #1e1e2f;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button.executeBtn:hover {
+    background: #3ecf60;
+}
+
+.resultConsole {
+    margin-top: 8px;
+    min-height: 20px;
+    font-size: 0.85em;
+    color: #ffb86c;
+    text-align: center;
+    width: 100%;
+    word-wrap: break-word; /* Prevent text overflow */
+}
+
+.highlight {
+    outline: 2px dashed #50fa7b;
+}
+
+/* Light Mode Global Toggle */
+body.darkmode {
+    background: linear-gradient(180deg, #3a3a3f 0%, #8d0218 36%, #f68d15 100%) !important;
+    color: #f0f0f0;
+}
+
+body.darkmode .link-card {
+    background: #2d2d2d;
+    color: #f0f0f0;
+}
+
+body.darkmode .link-card .link-content h3 {
+    color: #fff;
+}
+
+body.darkmode .link-card .link-content p {
+    color: #ccc;
+}
+
+body.darkmode .tryItUrselfMiniGame {
+    background: #2d2d2d;
+    color: #f0f0f0;
+}
+
+body.darkmode .lang-toggle {
+    background: #333;
+    color: #f0f0f0;
+}
+
+body.darkmode .project-btn {
+    background: #444;
+    color: #f0f0f0;
+}
+
+body.darkmode .project-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* =========================================
+   CODE MODE STYLES (from test.html)
+   ========================================= */
+
+#code-mode-container .game-zone {
+    background: #2d2d44;
+    padding: 20px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%; /* Adapt to container */
+    max-width: 280px;
+    min-height: auto; /* Let content dictate or set min height */
+    aspect-ratio: auto;
+    overflow: visible;
+    flex: 1 1 280px;
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+body.darkmode #code-mode-container .game-zone {
+    background: #2a2a2a;
+    color: #f0f0f0;
+}
+
+#code-mode-container pre {
+    background: #3b3b5c;
+    padding: 16px;
+    border-radius: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    word-wrap: break-word; /* Prevent overflow */
+    min-height: 180px;
+    color: #f8f8f2;
+    font-size: 0.85em; /* Slightly smaller to fit */
+    position: relative;
+    margin-bottom: 0;
+    overflow-x: auto; /* Allow horizontal scroll if absolutely needed */
+}
+
+body.darkmode #code-mode-container pre {
+    background: #1e1e1e;
+    color: #f0f0f0;
+}
+
+#code-mode-container .placeholder {
+    display: inline-block;
+    background: #6272a4;
+    border-radius: 6px;
+    padding: 2px 4px;
+    min-width: 60px;
+    min-height: 18px;
+    margin: 0 2px;
+    color: #f8f8f2;
+    cursor: grab;
+    transition: transform 0.2s ease;
+}
+
+#code-mode-container .placeholder:hover {
+    transform: scale(1.05);
+}
+
+#code-mode-container .placeholder:active {
+    cursor: grabbing;
+}
+
+body.darkmode #code-mode-container .placeholder {
+    background: #3c3c3c;
+    color: #f0f0f0;
+}
+
+#code-mode-container .placeholder.dragging {
+    opacity: 0.5;
+}
+
+/* =========================================
+   VISUAL MODE STYLES (from test2.html)
+   ========================================= */
+
+#visual-mode-container .visual-zone {
+    width: 100%;
+    max-width: 200px; /* Reduced from 280px to fit better */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: visible;
+}
+
+#visual-mode-container .slot {
+    width: 150px; /* Reduced from 200px */
+    height: 150px; /* Reduced from 200px */
+    border-radius: 50%;
+    border: 2px dashed #6272a4;
+    position: relative;
+    margin-bottom: 12px;
+}
+
+#visual-mode-container .slot .cut-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    border-top: 2px dashed #50fa7b;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+#visual-mode-container .inner-circle {
+    width: 50px; /* Reduced from 60px */
+    height: 50px;
+    border-radius: 50%;
+    background: #50fa7b;
+    font-size: 2em;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    border: 2px dashed #ffb86c;
+    z-index: 20;
+    transition: transform 0.2s ease;
+}
+
+#visual-mode-container .inner-circle:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+#visual-mode-container .inner-circle:active {
+    cursor: grabbing;
+}
+
+#visual-mode-container .donut {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    transition: transform 0.2s ease;
+}
+
+#visual-mode-container .donut:hover {
+    transform: scale(1.05);
+}
+
+#visual-mode-container .donut:active {
+    cursor: grabbing;
+}
+
+#visual-mode-container .donut-piece {
+    width: 40px; /* Reduced from 50px */
+    height: 40px;
+    border-radius: 50%;
+    background: #6272a4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em; /* Reduced */
+    position: absolute;
+}
+
+#visual-mode-container .top-piece {
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#visual-mode-container .bottom-piece {
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Ensure images in donut pieces fit */
+#visual-mode-container .donut-piece img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
+.miniGame-container.hidden {
+    display: none;
+}

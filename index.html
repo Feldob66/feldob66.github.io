@@ -1,47 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
+    <title data-en = "Félix Huszár | Portfolio" data-hu = "Huszár Félix | Portfólió">Félix Huszár | Portfolio</title>
+    <meta name="description" content="Félix Huszár - Full Stack Developer portfolio with interactive programming projects and web experiments">
+    <meta property="og:title" content="Félix Huszár | Portfolio">
+    <meta property="og:description" content="Interactive developer portfolio with minigames and web tech playground">
+    <meta property="og:image" content="images/pfp.png">
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="styles/styles.css">
 </head>
-
 <body>
-    <h1>Hello, World!</h1>
-    <p>Welcome to my project. This is a simple Hello World page!</p>
+    <div class="container">
+        <button id="langToggle" class="lang-toggle" aria-label="Toggle language">
+            <span class="lang-option active" data-lang="en">EN</span>
+            <span class="lang-divider">|</span>
+            <span class="lang-option" data-lang="hu">HU</span>
+        </button>
+        
+        <div class="profile">
+            <img src="images/pfp.png" alt="Profile Picture" class="avatar">
+            <h1 data-en="Félix Huszár" data-hu="Huszár Félix">Félix Huszár</h1>
+            <p class="tagline" data-en="Full Stack Developer | Designer | Creator" data-hu="Full Stack Fejlesztő | Tervező | Alkotó">Full Stack Developer | Designer | Creator</p>
+            <p class="education" data-en="Software Engineering Bachelor's Degree" data-hu="Programtervező Informatikus BSc Egyetemi végzettség">Software Engineering Bachelor's Degree, Esterházy Károly Catholic University</p>
+        </div>
 
-    <!-- Container for Temu image URL -->
-    <p id="temu-image"></p>
+        <div class="links">
+            <div class="link-card" data-category="project">
+                <!-- Header stays visible -->
+                <div class="link-card-header interactive" tabindex="0">
+                    <div class="link-icon">🚀</div>
+                    <div class="link-content">
+                        <h3 data-en="Get in my shoes" data-hu="Próbáld ki te is">Get in my shoes</h3>
+                        <p data-en="Try out programming for yourself in a simple, but quick and easy way." data-hu="Próbáld ki a programozást egyszerűen, gyorsan és könnyen.">Try out programming for yourself in a simple, but quick and easy way.</p>
+                    </div>
+                </div>
 
-    <script>
-        (function() {
-            // Check if URL has a Temu link as query param ?temu=<link>
-            const urlParams = new URLSearchParams(window.location.search);
-            const temuLink = urlParams.get("temu");
+                <!-- Minigame Container -->
+                <div class="tryItUrselfMiniGame hidden" id="miniGame">
 
-            if (!temuLink) return; // No Temu link, do nothing
+                    <!-- Explainer Text -->
+                    <div class="minigame-explainer">
+                        <p data-en="🎮 Drag the highlighted code pieces into the gray placeholders and click Run to execute real code!"
+                            data-hu="🎮 Húzd a kiemelt kód darabokat a szürke helyőrzőkbe, majd kattints a Futtatás gombra!">
+                            🎮 Drag the highlighted code pieces into the gray placeholders and click Run to execute real code!
+                        </p>
+                    </div>
 
-            const output = document.getElementById("temu-image");
-            output.textContent = "Fetching Temu product image...";
+                    <!-- Minigame Header -->
+                    <div class="miniGame-header">
+                        <button id="miniGameClose">✕</button>
+                        <button id="miniGameModeToggle">Show Visual</button>
+                    </div>
 
-            // Fetch the share link and follow redirects
-            fetch(temuLink, { redirect: 'follow' })
-            .then(resp => {
-                const finalUrl = resp.url;
-                const params = new URL(finalUrl).searchParams;
-                const imgUrl = params.get("thumb_url") || params.get("share_img");
-                if (imgUrl) {
-                    output.textContent = "Temu Product Image URL: " + imgUrl;
-                } else {
-                    output.textContent = "Image not found";
-                }
-            })
-            .catch(err => {
-                output.textContent = "Error fetching Temu image: " + err;
-            });
-        })();
-    </script>
+                    <!-- CODE MODE CONTAINER -->
+                    <div id="code-mode-container" class="miniGame-container">
+                        <!-- ToggleSwitch Zone (Left) -->
+                        <div class="game-zone" data-zone="left">
+                            <pre>
+function toggleSwitch() {
+    <span class="placeholder" data-type="options" data-rotated="false">const optionsEN = ['EN','HU'];</span>
+    <span class="placeholder" data-type="functionality">langToggle(optionsEN[1]);</span>
+}
+                            </pre>
+                            <button class="executeBtn" type="button">Run</button>
+                            <div class="resultConsole"></div>
+                        </div>
+
+                        <!-- ToggleMode Zone (Middle) -->
+                        <div class="game-zone" data-zone="middle">
+                            <pre>
+function toggleMode() {
+    <span class="placeholder" data-type="options" data-rotated="false"></span>
+                    <span class="placeholder" data-type="functionality"></span>
+}
+                            </pre>
+                            <button class="executeBtn" type="button">Run</button>
+                            <div class="resultConsole"></div>
+                        </div>
+
+                        <!-- Rotate Zone (Right) -->
+                        <div class="game-zone" data-zone="right">
+                            <pre>
+function rotate(value) {
+    <span class="placeholder" data-type="options" data-rotated="false">const emojis = ['☀️','🌙'];</span>
+    <span class="placeholder" data-type="functionality">rotate(emojis);</span>
+}
+                            </pre>
+                            <button class="executeBtn" type="button">Run</button>
+                            <div class="resultConsole"></div>
+                        </div>
+                    </div>
+
+                    <!-- VISUAL MODE CONTAINER -->
+                    <div id="visual-mode-container" class="miniGame-container hidden">
+                        <!-- Left zone: Language -->
+                        <div class="visual-zone" data-zone="left">
+                            <div class="slot" data-slot="left">
+                                <div class="cut-line"></div>
+                            </div>
+                            <button class="executeBtn" type="button">Run</button>
+                            <div class="resultConsole"></div>
+                        </div>
+
+                        <!-- Middle zone: Empty -->
+                        <div class="visual-zone" data-zone="middle">
+                            <div class="slot" data-slot="middle">
+                                <div class="cut-line"></div>
+                            </div>
+                            <button class="executeBtn" type="button">Run</button>
+                            <div class="resultConsole"></div>
+                        </div>
+
+                        <!-- Right zone: Sun/Moon -->
+                        <div class="visual-zone" data-zone="right">
+                            <div class="slot" data-slot="right">
+                                <div class="cut-line"></div>
+                            </div>
+                            <button class="executeBtn" type="button">Run</button>
+                            <div class="resultConsole"></div>
+                        </div>
+
+                        <!-- Donuts / Inner Circles (Hidden source for drag) -->
+                        <div id="donuts" style="display:none;">
+                            <!-- Left zone donut -->
+                            <div class="donut" draggable="true" data-zone="left" data-type="flags">
+                                <img class="donut-piece top-piece" src="images/gb.png" alt="EN">
+                                <img class="donut-piece bottom-piece" src="images/hu.png" alt="HU">
+                            </div>
+
+                            <!-- Left inner-circle -->
+                            <div class="inner-circle" draggable="true" data-zone="left" id="switch">
+                                <img src="images/set.png" alt="Switch" style="width:80%; height:80%;">
+                            </div>
+
+                            <!-- Right zone donut -->
+                            <div class="donut" draggable="true" data-zone="right" data-type="emojis">
+                                <div class="donut-piece top-piece">☀️</div>
+                                <div class="donut-piece bottom-piece">🌙</div>
+                            </div>
+
+                            <!-- Right inner-circle -->
+                            <div class="inner-circle" draggable="true" data-zone="right" id="rotator">🌳</div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="link-card" data-category="project" style="pointer-events: auto;">
+                <div class="link-icon">⛳</div>
+
+                <div class="link-content">
+                    <h3 data-en="3D Minigolf Tower Defense"
+                        data-hu="3D Minigolf Tower Defense">
+                        3D Minigolf Tower Defense
+                    </h3>
+
+                    <p data-en="Unity-based hybrid game combining minigolf and tower defense mechanics"
+                    data-hu="Unity-alapú hibrid játék, amely menő-golfot és torony védelmet kombinál">
+                        Unity-based hybrid game combining minigolf and tower defense mechanics
+                    </p>
+
+                    <div class="project-preview">
+                        <video id="szakdogaVideo" playsinline poster="images/video-thumbnail.png">
+                            <source src="images/szakdoga-video.mp4" type="video/mp4">
+                        </video>
+                        <div class="video-gif-preview">
+                            <img src="images/szakdoga-preview.gif" alt="Preview">
+                        </div>
+                        <div class="video-play-button">
+                            <svg viewBox="0 0 24 24" fill="white">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="project-links">
+                        <a href="https://github.com/Feldob66/szakdoga"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="project-btn" style="flex: 1; text-align: center;">
+                            💻 Code
+                        </a>
+
+                        <a href="https://github.com/Feldob66/szakdoga-video"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="project-btn" style="flex: 1; text-align: center;">
+                            🎥 Video
+                        </a>
+
+                        <a href="https://github.com/Feldob66/szakdoga-build"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="project-btn" style="flex: 1; text-align: center;">
+                            📦 Build
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+            <a href="Playground/Html_Playground.html" target="_blank" rel="noopener noreferrer" class="link-card" data-category="project">
+                <div class="link-icon">🎨</div>
+                <div class="link-content">
+                    <h3 data-en="Web Tech Playground" data-hu="Web Tech Játszótér">Web Tech Playground</h3>
+                    <p data-en="Interactive environment for real-time HTML, CSS, and JS experimentation." 
+                    data-hu="Interaktív környezet valós idejű HTML, CSS és JS kísérletezéshez.">
+                    Interactive environment for real-time HTML, CSS, and JS experimentation.
+                    </p>
+                </div>
+            </a>
+
+            <a href="mailto:felix.huszar@gmail.com" class="link-card" data-category="social">
+                <div class="link-icon">📧</div>
+                <div class="link-content">
+                    <h3 data-en="Email Me" data-hu="Írj nekem">Email Me</h3>
+                    <p>felix.huszar@gmail.com</p>
+                </div>
+            </a>
+
+            <a href="https://www.linkedin.com/in/f%C3%A9lix-husz%C3%A1r-73b7343a8/" class="link-card" data-category="social" target="_blank" rel="noopener noreferrer">
+                <div class="link-icon">💼</div>
+                <div class="link-content">
+                    <h3>LinkedIn</h3>
+                    <p data-en="Connect with me professionally" data-hu="Lépj velem kapcsolatba szakmai szinten">Connect with me professionally</p>
+                </div>
+            </a>
+
+            <a href="https://github.com/Feldob66/" target="_blank" class="link-card" data-category="social" style="text-decoration: none; color: inherit;">
+            <div class="link-icon">👾</div>
+            <div class="link-content">
+                <h3 data-en="GitHub Profile" data-hu="GitHub Profil">GitHub Profile</h3>
+                <p data-en="Check out my code repositories and contributions" 
+                data-hu="Nézd meg a kód tárhelyeimet és hozzájárulásaimat">
+                Check out my code repositories and contributions
+                </p>
+
+                <div class="project-links" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <object style="flex: 1; min-width: 120px;">
+                    <a href="https://github.com/Feldob66/suika_game_repository" 
+                    target="_blank" rel="noopener noreferrer" class="project-btn" 
+                    style="display: block; text-align: center; pointer-events: auto;"
+                    data-en="🎮 Suika Game" data-hu="🎮 Suika Játék">
+                    🎮 Suika Game
+                    </a>
+                </object>
+                <object style="flex: 1; min-width: 120px;">
+                    <a href="https://github.com/Feldob66/Decryption" 
+                    target="_blank" rel="noopener noreferrer" class="project-btn" 
+                    style="display: block; text-align: center; pointer-events: auto;"
+                    data-en="🔓 Decryption" data-hu="🔓 Dekódolás">
+                    🔓 Decryption
+                    </a>
+                </object>
+                <object style="flex: 1; min-width: 120px;">
+                    <a href="https://github.com/Feldob66/tpr" 
+                    target="_blank" rel="noopener noreferrer" class="project-btn" 
+                    style="display: block; text-align: center; pointer-events: auto;"
+                    data-en="📄 TP Handler" data-hu="📄 TP Kezelő">
+                    📄 TP Handler
+                    </a>
+                </object>
+                <object style="flex: 1; min-width: 120px;">
+                    <a href="https://github.com/Feldob66/MyProject" 
+                    target="_blank" rel="noopener noreferrer" class="project-btn" 
+                    style="display: block; text-align: center; pointer-events: auto;"
+                    data-en="📚 C# HW project" data-hu="📚 C# HF projekt">
+                    📚 C# HW project
+                    </a>
+                </object>
+            </div>
+            </div>
+        </a>
+        </div>
+
+        <footer>
+            <p data-en="© 2026 Félix Huszár. All rights reserved." data-hu="© 2026 Félix Huszár. Minden jog fenntartva.">© 2026 Félix Huszár. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="scripts/script.js"></script>
 </body>
-
 </html>
