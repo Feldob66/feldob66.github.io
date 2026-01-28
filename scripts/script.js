@@ -169,13 +169,13 @@ modeToggleBtn?.addEventListener('click', () => {
 function createVisualElement(type, id, zone) {
     let source = null;
     if (type === 'donut') {
-         source = document.querySelector(`#donuts .donut[data-type="${id}"]`);
+        source = document.querySelector(`#donuts .donut[data-type="${id}"]`);
          // If no direct type match, fallback to zone match logic or specific types
-         if (!source && zone) {
-             if (id === 'flags') source = document.querySelector(`#donuts .donut[data-type="flags"]`);
-             else if (id === 'emojis') source = document.querySelector(`#donuts .donut[data-type="emojis"]`);
-             else if (id === 'mode') source = document.querySelector(`#donuts .donut[data-type="mode"]`);
-         }
+        if (!source && zone) {
+            if (id === 'flags') source = document.querySelector(`#donuts .donut[data-type="flags"]`);
+            else if (id === 'emojis') source = document.querySelector(`#donuts .donut[data-type="emojis"]`);
+            else if (id === 'mode') source = document.querySelector(`#donuts .donut[data-type="mode"]`);
+        }
     } else if (type === 'inner') {
         source = document.querySelector(`#donuts .inner-circle[id="${id}"]`);
     }
@@ -185,9 +185,30 @@ function createVisualElement(type, id, zone) {
         clone.style.top = '50%';
         clone.style.left = '50%';
         clone.style.transform = 'translate(-50%,-50%)';
+        // Mouse drag
         clone.addEventListener('dragstart', ev => {
             draggedVisual = clone;
             ev.dataTransfer.setData('text/plain', '');
+        });
+        // Touch drag (phone support)
+        clone.addEventListener('touchstart', (e) => {
+            draggedVisual = clone;
+            touchStartXVisual = e.touches[0].clientX;
+            touchStartYVisual = e.touches[0].clientY;
+        });
+        clone.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        });
+        clone.addEventListener('touchend', (e) => {
+            const touch = e.changedTouches[0];
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (elementBelow) {
+                const slot = elementBelow.closest('.slot');
+                if (slot && draggedVisual) {
+                    handleVisualDrop(slot, draggedVisual);
+                }
+            }
+            draggedVisual = null;
         });
         return clone;
     }
@@ -212,8 +233,8 @@ function syncCodeToVisual() {
         else if (optionsText === "") donutId = "mode"; // Default/Empty
 
         if (donutId) {
-             const el = createVisualElement('donut', donutId, zone);
-             if (el) visualSlot.appendChild(el);
+            const el = createVisualElement('donut', donutId, zone);
+            if (el) visualSlot.appendChild(el);
         }
 
         // Determine Inner
@@ -223,8 +244,8 @@ function syncCodeToVisual() {
         else if (funcText === "") innerId = "mode-switch"; // Default/Empty logic
 
         if (innerId) {
-             const el = createVisualElement('inner', innerId, zone);
-             if (el) visualSlot.appendChild(el);
+            const el = createVisualElement('inner', innerId, zone);
+            if (el) visualSlot.appendChild(el);
         }
     });
 }
@@ -262,9 +283,9 @@ function syncVisualToCode() {
                 else if (optText.includes('emojis')) funText = "langToggle(emojis[1]);"; // Or toggle logic
                 else funText = "langToggle();";
             } else if (id === 'rotator') {
-                 if (optText.includes('optionsEN')) funText = "rotate(optionsEN);";
-                 else if (optText.includes('emojis')) funText = "rotate(emojis);";
-                 else funText = "rotate();";
+                if (optText.includes('optionsEN')) funText = "rotate(optionsEN);";
+                else if (optText.includes('emojis')) funText = "rotate(emojis);";
+                else funText = "rotate();";
             } else if (id === 'mode-switch') {
                 funText = "";
             }
@@ -281,11 +302,14 @@ function syncVisualToCode() {
 
 // Drag & Drop
 let draggedCode = null;
+let touchStartX = 0;
+let touchStartY = 0;
 const codePlaceholders = document.querySelectorAll('#code-mode-container .placeholder');
 
 codePlaceholders.forEach(ph => {
     ph.setAttribute('draggable', 'true');
 
+    // Mouse drag
     ph.addEventListener('dragstart', () => {
         draggedCode = ph;
         ph.classList.add('dragging');
@@ -318,6 +342,53 @@ codePlaceholders.forEach(ph => {
         const tempRot = ph.dataset.rotated;
         ph.dataset.rotated = draggedCode.dataset.rotated;
         draggedCode.dataset.rotated = tempRot;
+    });
+
+    // Touch drag (phone support)
+    ph.addEventListener('touchstart', (e) => {
+        draggedCode = ph;
+        ph.classList.add('dragging');
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    });
+
+    ph.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+        
+        document.querySelectorAll('.placeholder.highlight').forEach(el => {
+            el.classList.remove('highlight');
+        });
+        
+        if (elementBelow && elementBelow.classList.contains('placeholder')) {
+            elementBelow.classList.add('highlight');
+        }
+    });
+
+    ph.addEventListener('touchend', (e) => {
+        const touch = e.changedTouches[0];
+        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+        
+        document.querySelectorAll('.placeholder.highlight').forEach(el => {
+            el.classList.remove('highlight');
+        });
+        
+        if (elementBelow && elementBelow.classList.contains('placeholder')) {
+            const targetPh = elementBelow;
+            if (draggedCode && draggedCode !== targetPh && draggedCode.dataset.type === targetPh.dataset.type) {
+                const temp = targetPh.innerHTML;
+                targetPh.innerHTML = draggedCode.innerHTML;
+                draggedCode.innerHTML = temp;
+
+                const tempRot = targetPh.dataset.rotated;
+                targetPh.dataset.rotated = draggedCode.dataset.rotated;
+                draggedCode.dataset.rotated = tempRot;
+            }
+        }
+        
+        draggedCode = null;
+        ph.classList.remove('dragging');
     });
 });
 
@@ -391,67 +462,124 @@ document.querySelectorAll('#code-mode-container .executeBtn').forEach(btn => {
 // ====================
 
 let draggedVisual = null;
+let touchStartXVisual = 0;
+let touchStartYVisual = 0;
 
 // Enable dragging for donuts and inner circles
 document.querySelectorAll('.donut, .inner-circle').forEach(el => {
+    // Mouse drag
     el.addEventListener('dragstart', e => {
         draggedVisual = el;
         e.dataTransfer.setData('text/plain', '');
     });
+
+    // Touch drag (phone support)
+    el.addEventListener('touchstart', (e) => {
+        draggedVisual = el;
+        touchStartXVisual = e.touches[0].clientX;
+        touchStartYVisual = e.touches[0].clientY;
+    });
+
+    el.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+    });
+
+    el.addEventListener('touchend', (e) => {
+        const touch = e.changedTouches[0];
+        const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+        
+        if (elementBelow) {
+            const slot = elementBelow.closest('.slot');
+            if (slot && draggedVisual) {
+                // Trigger drop logic
+                handleVisualDrop(slot, draggedVisual);
+            }
+        }
+        draggedVisual = null;
+    });
 });
+
+// Shared drop logic for both mouse and touch
+function handleVisualDrop(slot, element) {
+    if (!element) return;
+    
+    let elementToDrop;
+
+    // Check source parent
+    const sourceSlot = element.parentNode.classList.contains('slot') ? element.parentNode : null;
+
+    // If dragging from a slot (move), use the original. If from source (copy), clone it.
+    if (sourceSlot) {
+        elementToDrop = element;
+    } else {
+        elementToDrop = element.cloneNode(true);
+        // Mouse drag
+        elementToDrop.addEventListener('dragstart', ev => {
+            draggedVisual = elementToDrop;
+            ev.dataTransfer.setData('text/plain', '');
+        });
+        // Touch drag
+        elementToDrop.addEventListener('touchstart', (e) => {
+            draggedVisual = elementToDrop;
+            touchStartXVisual = e.touches[0].clientX;
+            touchStartYVisual = e.touches[0].clientY;
+        });
+        elementToDrop.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        });
+        elementToDrop.addEventListener('touchend', (e) => {
+            const touch = e.changedTouches[0];
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (elementBelow) {
+                const targetSlot = elementBelow.closest('.slot');
+                if (targetSlot && draggedVisual) {
+                    handleVisualDrop(targetSlot, draggedVisual);
+                }
+            }
+            draggedVisual = null;
+        });
+    }
+    
+    // Check for existing element of same type
+    let existing = null;
+    if (element.classList.contains('donut')) {
+        existing = slot.querySelector('.donut');
+    } else if (element.classList.contains('inner-circle')) {
+        existing = slot.querySelector('.inner-circle');
+    }
+
+    if (existing) {
+        if (sourceSlot) {
+            // Swap: Move existing to source slot
+            sourceSlot.appendChild(existing);
+            // Reset styles for the swapped element
+            existing.style.top = '50%';
+            existing.style.left = '50%';
+            existing.style.transform = 'translate(-50%,-50%)';
+        } else {
+            // Overwrite: Source is inventory, just remove existing
+            existing.remove();
+        }
+    }
+
+    slot.appendChild(elementToDrop);
+    elementToDrop.style.top = '50%';
+    elementToDrop.style.left = '50%';
+    elementToDrop.style.transform = 'translate(-50%,-50%)';
+}
 
 // Slot drop logic
 document.querySelectorAll('#visual-mode-container .slot').forEach(slot => {
+    // Mouse drag
     slot.addEventListener('dragover', e => e.preventDefault());
     slot.addEventListener('drop', e => {
         e.preventDefault();
         if (!draggedVisual) return;
-        
-        let elementToDrop;
-
-        // Check source parent
-        const sourceSlot = draggedVisual.parentNode.classList.contains('slot') ? draggedVisual.parentNode : null;
-
-        // If dragging from a slot (move), use the original. If from source (copy), clone it.
-        if (sourceSlot) {
-            elementToDrop = draggedVisual;
-        } else {
-            elementToDrop = draggedVisual.cloneNode(true);
-            elementToDrop.addEventListener('dragstart', ev => {
-                draggedVisual = elementToDrop;
-                ev.dataTransfer.setData('text/plain', '');
-            });
-        }
-        
-        // Check for existing element of same type
-        let existing = null;
-        if (draggedVisual.classList.contains('donut')) {
-            existing = slot.querySelector('.donut');
-        } else if (draggedVisual.classList.contains('inner-circle')) {
-            existing = slot.querySelector('.inner-circle');
-        }
-
-        if (existing) {
-            if (sourceSlot) {
-                // Swap: Move existing to source slot
-                sourceSlot.appendChild(existing);
-                // Reset styles for the swapped element
-                existing.style.top = '50%';
-                existing.style.left = '50%';
-                existing.style.transform = 'translate(-50%,-50%)';
-            } else {
-                // Overwrite: Source is inventory, just remove existing
-                existing.remove();
-            }
-        }
-
-        slot.appendChild(elementToDrop);
-        elementToDrop.style.top = '50%';
-        elementToDrop.style.left = '50%';
-        elementToDrop.style.transform = 'translate(-50%,-50%)';
-        
+        handleVisualDrop(slot, draggedVisual);
         draggedVisual = null;
     });
+
+    // Touch drag handled by touchend on elements
 });
 
 // Execute logic
@@ -483,13 +611,13 @@ document.querySelectorAll('#visual-mode-container .executeBtn').forEach(btn => {
                 consoleEl.innerText = `${texts[newLang].langToggled} ${newLang.toUpperCase()}`;
                 consoleEl.style.color = "#50fa7b";
             } else if (inner.id === 'rotator') {
-                 if (top.tagName === 'IMG') {
-                     const temp = top.src;
-                     top.src = bottom.src;
-                     bottom.src = temp;
-                 }
-                 consoleEl.innerText = texts[lang].textRotated;
-                 consoleEl.style.color = "#50fa7b";
+                if (top.tagName === 'IMG') {
+                    const temp = top.src;
+                    top.src = bottom.src;
+                    bottom.src = temp;
+                }
+                consoleEl.innerText = texts[lang].textRotated;
+                consoleEl.style.color = "#50fa7b";
             }
         } else if (type === 'emojis') {
             if (inner.id === 'switch') {
@@ -502,11 +630,11 @@ document.querySelectorAll('#visual-mode-container .executeBtn').forEach(btn => {
                 consoleEl.style.color = "#50fa7b";
             }
         } else if (type === 'mode') {
-             if (inner.id === 'switch' || inner.id === 'mode-switch') {
+            if (inner.id === 'switch' || inner.id === 'mode-switch') {
                  // Just a visual feedback for now, or could toggle mode
-                 consoleEl.innerText = "Function Executed"; 
-                 consoleEl.style.color = "#50fa7b";
-             }
+                consoleEl.innerText = "Function Executed"; 
+                consoleEl.style.color = "#50fa7b";
+            }
         }
     });
 });
