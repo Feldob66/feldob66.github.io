@@ -34,7 +34,105 @@ function setLanguage(lang) {
 // MAIN PAGE LOGIC
 // ====================
 
+// Global drag ghost element
+let dragGhost = null;
+
+function createDragGhost(element) {
+    // Only show drag ghost on touch devices (tablets/phones)
+    // On desktop/laptop with mouse, the cursor is already visible so no need for ghost
+    const isTouchDevice = window.matchMedia('(hover: none)').matches;
+    
+    if (!isTouchDevice) {
+        return null; // Don't create ghost on devices with mouse/hover capability
+    }
+    
+    if (dragGhost) dragGhost.remove();
+    
+    dragGhost = element.cloneNode(true);
+    
+    // Copy exact dimensions from original
+    const rect = element.getBoundingClientRect();
+    dragGhost.style.width = rect.width + 'px';
+    dragGhost.style.height = rect.height + 'px';
+    
+    // Position and styling
+    dragGhost.style.position = 'fixed';
+    dragGhost.style.pointerEvents = 'none';
+    dragGhost.style.zIndex = '10000';
+    dragGhost.style.opacity = '0.8';
+    dragGhost.style.transform = 'translate(-50%, -50%)';
+    dragGhost.style.boxShadow = '0 4px 20px rgba(80, 250, 123, 0.6)';
+    dragGhost.style.transition = 'none';
+    
+    // Preserve all computed styles
+    const computed = window.getComputedStyle(element);
+    dragGhost.style.background = computed.background;
+    dragGhost.style.border = computed.border;
+    dragGhost.style.borderRadius = computed.borderRadius;
+    dragGhost.style.padding = computed.padding;
+    dragGhost.style.fontSize = computed.fontSize;
+    dragGhost.style.fontFamily = computed.fontFamily;
+    dragGhost.style.color = computed.color;
+    dragGhost.style.fontWeight = computed.fontWeight;
+    dragGhost.style.textAlign = computed.textAlign;
+    dragGhost.style.lineHeight = computed.lineHeight;
+    dragGhost.style.whiteSpace = 'pre-wrap'; // Preserve text wrapping
+    dragGhost.style.wordWrap = 'break-word';
+    dragGhost.style.overflowWrap = 'break-word';
+    
+    // For visual mode elements (donuts/circles), preserve layout
+    if (element.classList.contains('donut') || element.classList.contains('inner-circle')) {
+        dragGhost.style.display = computed.display;
+        dragGhost.style.justifyContent = computed.justifyContent;
+        dragGhost.style.alignItems = computed.alignItems;
+        
+        // Copy styles for all children
+        const originalChildren = element.querySelectorAll('*');
+        const cloneChildren = dragGhost.querySelectorAll('*');
+        originalChildren.forEach((child, index) => {
+            if (cloneChildren[index]) {
+                const childComputed = window.getComputedStyle(child);
+                const childClone = cloneChildren[index];
+                childClone.style.position = childComputed.position;
+                childClone.style.top = childComputed.top;
+                childClone.style.left = childComputed.left;
+                childClone.style.right = childComputed.right;
+                childClone.style.bottom = childComputed.bottom;
+                childClone.style.transform = childComputed.transform;
+                childClone.style.width = childComputed.width;
+                childClone.style.height = childComputed.height;
+            }
+        });
+    }
+    
+    document.body.appendChild(dragGhost);
+    return dragGhost;
+}
+
+function removeDragGhost() {
+    if (dragGhost) {
+        dragGhost.remove();
+        dragGhost = null;
+    }
+}
+
+function updateDragGhostPosition(x, y) {
+    if (dragGhost) {
+        dragGhost.style.left = x + 'px';
+        dragGhost.style.top = y + 'px';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Disable image dragging and selection globally
+    document.querySelectorAll('img').forEach(img => {
+        img.setAttribute('draggable', 'false');
+        img.style.userSelect = 'none';
+        img.style.WebkitUserSelect = 'none';
+        img.style.WebkitTouchCallout = 'none';
+        img.style.pointerEvents = 'none';
+    });
 
     // --- Language toggle button ---
     const langToggle = document.getElementById('langToggle');
@@ -58,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => ripple.remove(), 600);
 
             const title = card.querySelector('h3')?.textContent;
-            console.log(`Link clicked: ${title}`);
+            //console.log(`Link clicked: ${title}`);
         });
 
         card.addEventListener('mouseenter', () => {
@@ -81,6 +179,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('Portfolio loaded');
     console.log(`Page views: ${views + 1}`);
+    
+    // --- Back to Top Button ---
+    const backToTopBtn = document.getElementById('backToTop');
+    
+    if (backToTopBtn) {
+        //console.log('Back to Top button found');
+        let scrollAnimationId = null;
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add('visible');
+                //console.log('Scroll > 300, showing button');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            // If already scrolling, cancel and snap to top instantly
+            if (scrollAnimationId !== null) {
+                cancelAnimationFrame(scrollAnimationId);
+                window.scrollTo(0, 0);
+                scrollAnimationId = null;
+                return;
+            }
+            
+            const startPosition = window.scrollY;
+            const duration = 1200; // Slower: 1.2 seconds
+            const startTime = performance.now();
+            
+            function easeOutCubic(t) {
+                return 1 - Math.pow(1 - t, 3);
+            }
+            
+            function scroll(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easing = easeOutCubic(progress);
+                
+                window.scrollTo(0, startPosition * (1 - easing));
+                
+                if (progress < 1) {
+                    scrollAnimationId = requestAnimationFrame(scroll);
+                } else {
+                    scrollAnimationId = null;
+                }
+            }
+            
+            scrollAnimationId = requestAnimationFrame(scroll);
+        });
+    } else {
+        //console.log('Back to Top button NOT found');
+    }
 });
 
 
@@ -185,19 +336,52 @@ function createVisualElement(type, id, zone) {
         clone.style.top = '50%';
         clone.style.left = '50%';
         clone.style.transform = 'translate(-50%,-50%)';
+        // Prevent image selection on cloned element
+        clone.style.userSelect = 'none';
+        clone.style.WebkitUserSelect = 'none';
+        clone.style.WebkitTouchCallout = 'none';
+        clone.style.cursor = 'grab';
+        clone.querySelectorAll('*').forEach(child => {
+            child.style.pointerEvents = 'none';
+            child.style.userSelect = 'none';
+            child.style.WebkitUserSelect = 'none';
+        });
+        // Disable dragging for any images inside
+        clone.querySelectorAll('img').forEach(img => {
+            img.setAttribute('draggable', 'false');
+            img.style.pointerEvents = 'none';
+        });
         // Mouse drag
         clone.addEventListener('dragstart', ev => {
             draggedVisual = clone;
             ev.dataTransfer.setData('text/plain', '');
+            createDragGhost(clone);
+        });
+        clone.addEventListener('drag', (ev) => {
+            if (ev.clientX !== 0 || ev.clientY !== 0) {
+                updateDragGhostPosition(ev.clientX, ev.clientY);
+            }
+        });
+        clone.addEventListener('dragend', () => {
+            removeDragGhost();
         });
         // Touch drag (phone support)
         clone.addEventListener('touchstart', (e) => {
             draggedVisual = clone;
             touchStartXVisual = e.touches[0].clientX;
             touchStartYVisual = e.touches[0].clientY;
+            // Create ghost that follows finger
+            createDragGhost(clone);
+            updateDragGhostPosition(e.touches[0].clientX, e.touches[0].clientY);
+            clone.style.opacity = '0.5';
         });
         clone.addEventListener('touchmove', (e) => {
             e.preventDefault();
+            if (draggedVisual && draggedVisual === clone) {
+                const touch = e.touches[0];
+                // Update ghost position to follow finger
+                updateDragGhostPosition(touch.clientX, touch.clientY);
+            }
         });
         clone.addEventListener('touchend', (e) => {
             const touch = e.changedTouches[0];
@@ -208,6 +392,9 @@ function createVisualElement(type, id, zone) {
                     handleVisualDrop(slot, draggedVisual);
                 }
             }
+            // Remove visual feedback
+            clone.style.opacity = '1';
+            removeDragGhost();
             draggedVisual = null;
         });
         return clone;
@@ -308,16 +495,32 @@ const codePlaceholders = document.querySelectorAll('#code-mode-container .placeh
 
 codePlaceholders.forEach(ph => {
     ph.setAttribute('draggable', 'true');
+    // Prevent image selection and focus
+    ph.style.userSelect = 'none';
+    ph.style.WebkitUserSelect = 'none';
+    ph.style.WebkitTouchCallout = 'none';
+    ph.style.cursor = 'grab';
+    ph.querySelectorAll('*').forEach(child => {
+        child.style.pointerEvents = 'none';
+    });
 
     // Mouse drag
-    ph.addEventListener('dragstart', () => {
+    ph.addEventListener('dragstart', (e) => {
         draggedCode = ph;
         ph.classList.add('dragging');
+        createDragGhost(ph);
+    });
+
+    ph.addEventListener('drag', (e) => {
+        if (e.clientX !== 0 || e.clientY !== 0) {
+            updateDragGhostPosition(e.clientX, e.clientY);
+        }
     });
 
     ph.addEventListener('dragend', () => {
         draggedCode = null;
         ph.classList.remove('dragging');
+        removeDragGhost();
     });
 
     ph.addEventListener('dragover', e => {
@@ -350,11 +553,17 @@ codePlaceholders.forEach(ph => {
         ph.classList.add('dragging');
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
+        // Create visual ghost that follows finger
+        createDragGhost(ph);
+        updateDragGhostPosition(e.touches[0].clientX, e.touches[0].clientY);
+        ph.style.opacity = '0.5';
     });
 
     ph.addEventListener('touchmove', (e) => {
         e.preventDefault();
         const touch = e.touches[0];
+        // Update ghost position to follow finger
+        updateDragGhostPosition(touch.clientX, touch.clientY);
         const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
         
         document.querySelectorAll('.placeholder.highlight').forEach(el => {
@@ -389,6 +598,9 @@ codePlaceholders.forEach(ph => {
         
         draggedCode = null;
         ph.classList.remove('dragging');
+        // Remove visual feedback
+        ph.style.opacity = '1';
+        removeDragGhost();
     });
 });
 
@@ -467,10 +679,38 @@ let touchStartYVisual = 0;
 
 // Enable dragging for donuts and inner circles
 document.querySelectorAll('.donut, .inner-circle').forEach(el => {
+    // Prevent image selection and focus
+    el.style.userSelect = 'none';
+    el.style.WebkitUserSelect = 'none';
+    el.style.WebkitTouchCallout = 'none';
+    el.style.cursor = 'grab';
+    el.querySelectorAll('*').forEach(child => {
+        child.style.pointerEvents = 'none';
+        child.style.userSelect = 'none';
+        child.style.WebkitUserSelect = 'none';
+    });
+    // Disable dragging for any images inside
+    el.querySelectorAll('img').forEach(img => {
+        img.setAttribute('draggable', 'false');
+        img.style.pointerEvents = 'none';
+    });
+
     // Mouse drag
     el.addEventListener('dragstart', e => {
         draggedVisual = el;
         e.dataTransfer.setData('text/plain', '');
+        createDragGhost(el);
+    });
+
+    el.addEventListener('drag', (e) => {
+        if (e.clientX !== 0 || e.clientY !== 0) {
+            updateDragGhostPosition(e.clientX, e.clientY);
+        }
+    });
+
+    el.addEventListener('dragend', () => {
+        draggedVisual = null;
+        removeDragGhost();
     });
 
     // Touch drag (phone support)
@@ -478,10 +718,19 @@ document.querySelectorAll('.donut, .inner-circle').forEach(el => {
         draggedVisual = el;
         touchStartXVisual = e.touches[0].clientX;
         touchStartYVisual = e.touches[0].clientY;
+        // Create visual ghost that follows finger
+        createDragGhost(el);
+        updateDragGhostPosition(e.touches[0].clientX, e.touches[0].clientY);
+        el.style.opacity = '0.5';
     });
 
     el.addEventListener('touchmove', (e) => {
         e.preventDefault();
+        if (draggedVisual && draggedVisual === el) {
+            const touch = e.touches[0];
+            // Update ghost position to follow finger
+            updateDragGhostPosition(touch.clientX, touch.clientY);
+        }
     });
 
     el.addEventListener('touchend', (e) => {
@@ -495,6 +744,9 @@ document.querySelectorAll('.donut, .inner-circle').forEach(el => {
                 handleVisualDrop(slot, draggedVisual);
             }
         }
+        // Remove visual feedback
+        el.style.opacity = '1';
+        removeDragGhost();
         draggedVisual = null;
     });
 });
@@ -513,19 +765,38 @@ function handleVisualDrop(slot, element) {
         elementToDrop = element;
     } else {
         elementToDrop = element.cloneNode(true);
+        // Disable dragging for any images inside
+        elementToDrop.querySelectorAll('img').forEach(img => {
+            img.setAttribute('draggable', 'false');
+            img.style.pointerEvents = 'none';
+        });
         // Mouse drag
         elementToDrop.addEventListener('dragstart', ev => {
             draggedVisual = elementToDrop;
             ev.dataTransfer.setData('text/plain', '');
+            createDragGhost(elementToDrop);
+        });
+        elementToDrop.addEventListener('drag', (ev) => {
+            if (ev.clientX !== 0 || ev.clientY !== 0) {
+                updateDragGhostPosition(ev.clientX, ev.clientY);
+            }
+        });
+        elementToDrop.addEventListener('dragend', () => {
+            removeDragGhost();
         });
         // Touch drag
         elementToDrop.addEventListener('touchstart', (e) => {
             draggedVisual = elementToDrop;
             touchStartXVisual = e.touches[0].clientX;
             touchStartYVisual = e.touches[0].clientY;
+            createDragGhost(elementToDrop);
+            updateDragGhostPosition(e.touches[0].clientX, e.touches[0].clientY);
+            elementToDrop.style.opacity = '0.5';
         });
         elementToDrop.addEventListener('touchmove', (e) => {
             e.preventDefault();
+            const touch = e.touches[0];
+            updateDragGhostPosition(touch.clientX, touch.clientY);
         });
         elementToDrop.addEventListener('touchend', (e) => {
             const touch = e.changedTouches[0];
@@ -536,6 +807,8 @@ function handleVisualDrop(slot, element) {
                     handleVisualDrop(targetSlot, draggedVisual);
                 }
             }
+            elementToDrop.style.opacity = '1';
+            removeDragGhost();
             draggedVisual = null;
         });
     }

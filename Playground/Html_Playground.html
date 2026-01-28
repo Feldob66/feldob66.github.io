@@ -175,111 +175,280 @@
         </div>
 
         <div class="playground-card">
-            <h2 data-en="Unicode ASCII Explorer" data-hu="Unicode ASCII Felfedező">Unicode ASCII Explorer</h2>
-            <p data-en="Iterate through the global character library." data-hu="Léptetés a globális karakterkönyvtáron keresztül.">Iterate through the global character library.</p>
-            <button disabled id="demoinfo" class="btndsbl2">Character Code: 0 ➡️</button>
-            <button class="result-btn" id="demo" disabled>&#0;</button>
-            <br>
-            <button onclick="emojiGen()" data-en="Next Code" data-hu="Következő Kód">Next Code</button>
+            <h2>Unicode ASCII Explorer</h2>
+            <p>Iterate through the global character library.</p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                <input type="number" id="charCodeInput" class="btndsbl2" min="0" style="flex: 1; max-width: 200px; text-align: center; font-size: 16px; padding: 10px; border: 1px solid rgba(255,200,100,0.3); border-radius: 8px; background: rgba(0,0,0,0.2); color: #E0E0E0;" disabled>
+                <span style="font-size: 20px; font-weight: bold;">➡️</span>
+                <button id="demoBtn" class="result-btn" style="flex: 1; max-width: 100px; font-size: 24px; padding: 15px; cursor: pointer;">&#0;</button>
+                <button id="editModeToggle" title="Edit mode" style="padding: 8px 12px; background: rgba(255, 165, 0, 0.2); border: 1px solid rgba(255,165,0,0.4); color: #E0E0E0; border-radius: 6px; cursor: pointer; font-size: 16px;">⚙️</button>
+            </div>
+            <div class="calc-row">
+                <button onclick="emojiGenPrev()">Previous</button>
+                <button onclick="emojiGen()">Next Code</button>
+            </div>
         </div>
 
         <footer>
             <button onclick="window.close()" data-en="Exit Playground" data-hu="Kilépés">Exit Playground</button>
         </footer>
+        
+        <!-- Back to Top Button -->
+        <button id="backToTop" class="back-to-top" aria-label="Back to top" title="Back to top">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+            </svg>
+        </button>
     </div>
 
     <script>
-        let currentLang = 'en';
-        let charNum = 0;
+    let currentLang = 'en';
+    let charNum = parseInt(localStorage.getItem('unicodeCharNum') || '0', 10);
 
-        // Refactored Translation logic to be more forceful with language pairs
-        async function translateText(text, source, target) {
-            if (!text || text.trim() === "") return text;
-            try {
-                // We explicitly tell Google the source and target to avoid detection errors
-                const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURI(text)}`);
-                const data = await response.json();
-                // Google returns an array of arrays; we grab the first translation result
-                return data[0][0][0];
-            } catch (e) { 
-                console.error("Translation failed:", e);
-                return text; 
-            }
+    // Refactored Translation logic to be more forceful with language pairs
+    async function translateText(text, source, target) {
+        if (!text || text.trim() === "") return text;
+        try {
+            const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURI(text)}`);
+            const data = await response.json();
+            return data[0][0][0];
+        } catch (e) { 
+            console.error("Translation failed:", e);
+            return text; 
+        }
+    }
+
+    const langToggle = document.getElementById('langToggle');
+
+    // Initialize character display with saved value
+    updateCharacterDisplay();
+    langToggle.addEventListener('click', async () => {
+        const oldLang = currentLang;
+        currentLang = currentLang === 'en' ? 'hu' : 'en';
+        let translatedTitle = document.title;
+        if (document.title === "Web Tech Playground" && oldLang === 'en' && currentLang === 'hu') {
+            translatedTitle = "Web Tech Játszótér";
+        } else if (document.title === "Web Tech Játszótér" && oldLang === 'hu' && currentLang === 'en') {
+            translatedTitle = "Web Tech Playground";
+        } else {
+            translatedTitle = await translateText(document.title, oldLang, currentLang);
+        }
+        document.querySelectorAll('[data-en]').forEach(el => {
+            el.textContent = el.getAttribute(`data-${currentLang}`);
+        });
+        document.querySelectorAll('[data-en-placeholder]').forEach(el => {
+            el.placeholder = el.getAttribute(`data-${currentLang}-placeholder`);
+        });
+        document.title = translatedTitle;
+        document.getElementById('greet-en').classList.toggle('hidden', currentLang !== 'en');
+        document.getElementById('greet-hu').classList.toggle('hidden', currentLang !== 'hu');
+        document.querySelectorAll('.lang-option').forEach(opt => opt.classList.toggle('active'));
+    });
+
+    function changePageTitle() {
+        const val = document.getElementById('ujize').value;
+        if(!val) {
+            alert(currentLang === 'en' ? "Input is empty!" : "A mező üres!");
+            return;
+        }
+        document.title = val;
+    }
+
+    function message1() {
+        const val = document.getElementById('masolat1').value;
+        alert(val ? `I ${val} you too!` : "You need to write something!");
+    }
+
+    function message2() {
+        const val = document.getElementById('masolat2').value;
+        alert(val ? `Én is ${val} téged!` : "Írnod kell valamit!");
+    }
+
+    function calc(op, id1, id2, resId) {
+        const n1 = Number(document.getElementById(id1).value);
+        const n2 = Number(document.getElementById(id2).value);
+        let res = op === '+' ? n1 + n2 : op === '-' ? n1 - n2 : op === '*' ? n1 * n2 : n1 / n2;
+        document.getElementById(resId).innerHTML = res;
+    }
+
+    /* ================= Unicode ASCII Explorer FIXED ================= */
+
+    let editMode = false;
+    let numberChanged = false;
+    let charChanged = false;
+
+    /* ---------- Display ---------- */
+    function updateCharacterDisplay() {
+        const charCodeInput = document.getElementById('charCodeInput');
+        const demoBtn = document.getElementById('demoBtn');
+
+        charCodeInput.value = charNum;
+        demoBtn.textContent = String.fromCodePoint(charNum);
+        localStorage.setItem('unicodeCharNum', charNum);
+    }
+
+    /* ---------- Edit Mode ---------- */
+    function enterEditMode() {
+        editMode = true;
+        numberChanged = false;
+        charChanged = false;
+
+        const input = document.getElementById('charCodeInput');
+        const btn = document.getElementById('demoBtn');
+
+        input.disabled = false;
+        btn.contentEditable = true;
+
+        // 👁️ visual clarity
+        btn.style.border = '2px dashed orange';
+        btn.style.background = 'rgba(255,165,0,0.15)';
+        btn.style.cursor = 'text';
+
+        document.getElementById('editModeToggle').style.background =
+            'rgba(255, 165, 0, 0.5)';
+
+        input.focus();
+    }
+
+    function exitEditMode(apply = true) {
+        const input = document.getElementById('charCodeInput');
+        const btn = document.getElementById('demoBtn');
+
+        input.disabled = true;
+        btn.contentEditable = false;
+
+        btn.style.border = '';
+        btn.style.background = '';
+        btn.style.cursor = 'pointer';
+
+        document.getElementById('editModeToggle').style.background =
+            'rgba(255, 165, 0, 0.2)';
+
+        editMode = false;
+
+        if (apply) applyChanges();
+    }
+
+    /* ---------- Apply Changes ---------- */
+    function applyChanges() {
+        const input = document.getElementById('charCodeInput');
+        const btn = document.getElementById('demoBtn');
+
+        const num = parseInt(input.value, 10);
+        const chars = Array.from(btn.textContent || '');
+
+        if (numberChanged && !isNaN(num) && num >= 0) {
+            charNum = num;
+        } else if (charChanged && chars.length > 0) {
+            charNum = chars[0].codePointAt(0);
         }
 
-        const langToggle = document.getElementById('langToggle');
-        langToggle.addEventListener('click', async () => {
-            // Store the OLD language before we swap
-            const oldLang = currentLang;
-            currentLang = currentLang === 'en' ? 'hu' : 'en';
-            
-            // 1. Translate current Page Title using the explicit old -> new pair
-            // Handle exceptions for titles that Google doesn't translate well
-            let translatedTitle = document.title;
-            if (document.title === "Web Tech Playground" && oldLang === 'en' && currentLang === 'hu') {
-                translatedTitle = "Web Tech Játszótér";
-            } else if (document.title === "Web Tech Játszótér" && oldLang === 'hu' && currentLang === 'en') {
-                translatedTitle = "Web Tech Playground";
-            } else {
-                // Use Google translation for other titles
-                translatedTitle = await translateText(document.title, oldLang, currentLang);
-            }
-            
-            // 2. Toggle UI Elements
-            document.querySelectorAll('[data-en]').forEach(el => {
-                el.textContent = el.getAttribute(`data-${currentLang}`);
-            });
-            document.querySelectorAll('[data-en-placeholder]').forEach(el => {
-                el.placeholder = el.getAttribute(`data-${currentLang}-placeholder`);
-            });
+        updateCharacterDisplay();
+    }
 
-            // 3. Restore the translated title (after UI updates to prevent override)
-            document.title = translatedTitle;
+    /* ---------- Next / Previous ---------- */
+    function emojiGen() {
+        if (editMode) {
+            applyChanges(); // Apply changes before incrementing
+        }
+        charNum++;
+        updateCharacterDisplay();
+    }
 
-            // 4. Toggle Greeting Sections
-            document.getElementById('greet-en').classList.toggle('hidden', currentLang !== 'en');
-            document.getElementById('greet-hu').classList.toggle('hidden', currentLang !== 'hu');
-            
-            document.querySelectorAll('.lang-option').forEach(opt => opt.classList.toggle('active'));
+    function emojiGenPrev() {
+        if (editMode) {
+            applyChanges(); // Apply changes before decrementing
+        }
+        if (charNum > 0) charNum--;
+        updateCharacterDisplay();
+    }
+
+    /* ---------- DOM Events ---------- */
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('charCodeInput');
+        const btn = document.getElementById('demoBtn');
+        const toggle = document.getElementById('editModeToggle');
+
+        updateCharacterDisplay();
+
+        toggle.addEventListener('click', () => {
+            editMode ? exitEditMode(true) : enterEditMode();
         });
 
-        function changePageTitle() {
-            const val = document.getElementById('ujize').value;
-            if(!val) {
-                alert(currentLang === 'en' ? "Input is empty!" : "A mező üres!");
-                return;
+        input.addEventListener('input', () => {
+            if (!editMode) return;
+            numberChanged = true;
+
+            const n = parseInt(input.value, 10);
+            if (!isNaN(n) && n >= 0) {
+                btn.textContent = String.fromCodePoint(n);
             }
-            document.title = val;
-        }
+        });
 
-        function message1() {
-            const val = document.getElementById('masolat1').value;
-            alert(val ? `I ${val} you too!` : "You need to write something!");
-        }
+        btn.addEventListener('input', () => {
+            if (!editMode) return;
+            charChanged = true;
 
-        function message2() {
-            const val = document.getElementById('masolat2').value;
-            alert(val ? `Én is ${val} téged!` : "Írnod kell valamit!");
-        }
+            // 🔒 allow ONLY one Unicode character
+            const chars = Array.from(btn.textContent);
+            if (chars.length > 1) {
+                btn.textContent = chars[0];
+                placeCaretAtEnd(btn);
+            }
+        });
 
-        function calc(op, id1, id2, resId) {
-            const n1 = Number(document.getElementById(id1).value);
-            const n2 = Number(document.getElementById(id2).value);
-            let res = op === '+' ? n1 + n2 : op === '-' ? n1 - n2 : op === '*' ? n1 * n2 : n1 / n2;
-            document.getElementById(resId).innerHTML = res;
-        }
+        btn.addEventListener('click', () => {
+            if (!editMode) {
+                navigator.clipboard.writeText(btn.textContent);
+                alert((currentLang === 'en' ? 'Copied: ' : 'Másolva: ') + btn.textContent);
+            }
+        });
+    });
 
-        function emojiGen() {
-            charNum++;
-            document.getElementById('demo').innerHTML = `&#${charNum};`;
-            const prefix = currentLang === 'en' ? "Character Code: " : "Karakter Kód: ";
-            document.getElementById('demoinfo').innerHTML = `${prefix}${charNum} ➡️`;
-        }
+    /* ---------- Caret helper ---------- */
+    function placeCaretAtEnd(el) {
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
 
-        function SelfCopy(emoji) {
-            navigator.clipboard.writeText(emoji);
-            alert((currentLang === 'en' ? "Copied: " : "Másolva: ") + emoji);
+    // ---------------- Back to Top ----------------
+    document.addEventListener('DOMContentLoaded', () => {
+        const backToTopBtn = document.getElementById('backToTop');
+        
+        if (backToTopBtn) {
+            let scrollAnimationId = null;
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) backToTopBtn.classList.add('visible');
+                else backToTopBtn.classList.remove('visible');
+            });
+            backToTopBtn.addEventListener('click', () => {
+                if (scrollAnimationId !== null) {
+                    cancelAnimationFrame(scrollAnimationId);
+                    window.scrollTo(0, 0);
+                    scrollAnimationId = null;
+                    return;
+                }
+                const startPosition = window.scrollY;
+                const duration = 1200;
+                const startTime = performance.now();
+                function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+                function scroll(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easing = easeOutCubic(progress);
+                    window.scrollTo(0, startPosition * (1 - easing));
+                    if (progress < 1) scrollAnimationId = requestAnimationFrame(scroll);
+                    else scrollAnimationId = null;
+                }
+                scrollAnimationId = requestAnimationFrame(scroll);
+            });
         }
+    });
     </script>
+
 </body>
 </html>

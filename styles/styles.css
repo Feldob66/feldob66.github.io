@@ -5,6 +5,17 @@
     box-sizing: border-box;
 }
 
+/* Prevent image dragging and selection globally */
+img {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background: linear-gradient(180deg, #3a3a3f 0%, #8d0218 36%, #f68d15 100%);
@@ -804,4 +815,75 @@ body.darkmode #code-mode-container .placeholder {
 
 .miniGame-container.hidden {
     display: none;
+}
+
+/* ========================================
+   BACK TO TOP BUTTON
+   ======================================== */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.8);
+    z-index: 9999;
+    color: #333;
+    pointer-events: none;
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.back-to-top:hover {
+    background: rgba(255, 165, 0, 0.95);
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(255, 165, 0, 0.4);
+}
+
+.back-to-top:active {
+    transform: translateY(-2px) scale(0.95);
+}
+
+.back-to-top svg {
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+}
+
+/* Dark mode support */
+body.darkmode .back-to-top {
+    background: rgba(50, 50, 60, 0.95);
+    color: #fff;
+}
+
+body.darkmode .back-to-top:hover {
+    background: rgba(255, 165, 0, 0.95);
+    color: white;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
 }

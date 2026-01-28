@@ -20,7 +20,7 @@
         </button>
         
         <div class="profile">
-            <img src="images/pfp.png" alt="Profile Picture" class="avatar">
+            <img src="images/pfp.png" alt="Profile Picture" class="avatar" draggable="false">
             <h1 data-en="Félix Huszár" data-hu="Huszár Félix">Félix Huszár</h1>
             <p class="tagline" data-en="Full Stack Developer | Designer | Creator" data-hu="Full Stack Fejlesztő | Tervező | Alkotó">Full Stack Developer | Designer | Creator</p>
             <p class="education" data-en="Software Engineering Bachelor's Degree" data-hu="Programtervező Informatikus BSc Egyetemi végzettség">Software Engineering Bachelor's Degree, Esterházy Károly Catholic University</p>
@@ -126,13 +126,13 @@ function rotate(value) {
                         <div id="donuts" style="display:none;">
                             <!-- Left zone donut -->
                             <div class="donut" draggable="true" data-zone="left" data-type="flags">
-                                <img class="donut-piece top-piece" src="images/gb.png" alt="EN">
-                                <img class="donut-piece bottom-piece" src="images/hu.png" alt="HU">
+                                <img class="donut-piece top-piece" src="images/gb.png" alt="EN" draggable="false">
+                                <img class="donut-piece bottom-piece" src="images/hu.png" alt="HU" draggable="false">
                             </div>
 
                             <!-- Left inner-circle -->
                             <div class="inner-circle" draggable="true" data-zone="left" id="switch">
-                                <img src="images/set.png" alt="Switch" style="width:80%; height:80%;">
+                                <img src="images/set.png" alt="Switch" style="width:80%; height:80%;" draggable="false">
                             </div>
 
                             <!-- Right zone donut -->
@@ -170,7 +170,7 @@ function rotate(value) {
                             <source src="images/szakdoga-video.mp4" type="video/mp4">
                         </video>
                         <div class="video-gif-preview">
-                            <img src="images/szakdoga-preview.gif" alt="Preview">
+                            <img src="images/szakdoga-preview.gif" alt="Preview" draggable="false">
                         </div>
                         <div class="video-play-button">
                             <svg viewBox="0 0 24 24" fill="white">
@@ -282,7 +282,15 @@ function rotate(value) {
         <footer>
             <p data-en="© 2026 Félix Huszár. All rights reserved." data-hu="© 2026 Félix Huszár. Minden jog fenntartva.">© 2026 Félix Huszár. All rights reserved.</p>
         </footer>
+        
+        <!-- Back to Top Button -->
+        <button id="backToTop" class="back-to-top" aria-label="Back to top" title="Back to top">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+            </svg>
+        </button>
     </div>
+    
     <script src="scripts/script.js"></script>
 </body>
 </html>
