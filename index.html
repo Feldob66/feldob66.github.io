@@ -20,14 +20,67 @@
             <span class="lang-option" data-lang="hu">HU</span>
         </button>
         
+        <button id="themeToggle" class="theme-toggle hidden" aria-label="Toggle dark mode">
+            <span class="theme-option" data-theme="light">☀️</span>
+            <span class="theme-divider">|</span>
+            <span class="theme-option" data-theme="dark">🌙</span>
+        </button>
+        
         <div class="profile">
             <img src="images/pfp.png" alt="Profile Picture" class="avatar" draggable="false">
             <h1 data-en="Félix Huszár" data-hu="Huszár Félix">Félix Huszár</h1>
-            <p class="tagline" data-en="Full Stack Developer | Designer | Creator" data-hu="Full Stack Fejlesztő | Tervező | Alkotó">Full Stack Developer | Designer | Creator</p>
+            <div class="tech-badges">
+                <span class="badge">JavaScript</span>
+                <span class="badge">TypeScript</span>
+                <span class="badge">Java</span>
+                <span class="badge">Python</span>
+                <span class="badge">C#</span>
+                <span class="badge">Unity</span>
+                <span class="badge">HTML</span>
+                <span class="badge">CSS</span>
+                <span class="badge">PHP</span>
+                <span class="badge">Bootstrap</span>
+                <span class="badge">SQL</span>
+                <span class="badge">MySQL</span>
+            </div>
             <p class="education" data-en="Software Engineering Bachelor's Degree" data-hu="Programtervező Informatikus BSc Egyetemi végzettség">Software Engineering Bachelor's Degree, Esterházy Károly Catholic University</p>
         </div>
 
         <div class="links">
+            <div class="link-card about-card">
+                <div class="link-card-header static-header">
+                    <div class="link-icon">👨‍💻</div>
+                    <div class="link-content">
+                        <h3 data-en="About This Portfolio" data-hu="Erről a portfólióról">
+                            About This Portfolio
+                        </h3>
+                    </div>
+                </div>
+                <div class="link-content">
+                    <p
+                        data-en="Hi! I’m Félix, a passionate Full Stack Developer with a Bachelor’s degree in Software Engineering. This portfolio highlights my technical skills and creativity through interactive projects, experiments, and games."
+                        data-hu="Szia! Félix vagyok, lelkes programtervező informatikus (fejlesztői szakosodással). Ez a portfólió az eddigi munkáimat, technikai tudásomat és kreativitásomat mutatja be interaktív projektek, kísérletek és játékok segítségével."
+                    >
+                        Hi! I’m Félix, a passionate Full Stack Developer with a Bachelor’s degree in Software Engineering. This portfolio highlights my technical skills and creativity through interactive projects, experiments, and games.
+                    </p>
+
+                    <p
+                        data-en="I’m currently open to opportunities in web development or game development, preferably in a remote or home-office setting. I enjoy building engaging interactive experiences and tackling complex technical challenges."
+                        data-hu="Jelenleg web- vagy játékfejlesztői lehetőségeket keresek, elsősorban távmunkában vagy home office formában. Szívesen dolgozom interaktív élményeken, és különösen élvezem az összetettebb technikai problémák megoldását."
+                    >
+                        I’m currently open to opportunities in web development or game development, preferably in a remote or home-office setting. I enjoy building engaging interactive experiences and tackling complex technical challenges.
+                    </p>
+
+                    <p
+                        data-en="Feel free to explore my projects, try the interactive mini-game below, and reach out if you’d like to collaborate or just have a chat!"
+                        data-hu="Nézz körül a projektjeim között, próbáld ki az alábbi interaktív minijátékot, és nyugodtan vedd fel velem a kapcsolatot, ha szeretnél együttműködni vagy csak beszélgetni egyet!"
+                    >
+                        Feel free to explore my projects, try the interactive mini-game below, and reach out if you’d like to collaborate or just have a chat!
+                    </p>
+                </div>
+            </div>
+
+
             <div class="link-card" data-category="project">
                 <!-- Header stays visible -->
                 <div class="link-card-header interactive" tabindex="0">
@@ -74,7 +127,7 @@ function toggleLang() {
                             <pre>
 function toggleMode() {
     <span class="placeholder" data-type="options" data-rotated="false"></span>
-                    <span class="placeholder" data-type="functionality"></span>
+    <span class="placeholder" data-type="functionality"></span>
 }
                             </pre>
                             <button class="executeBtn" type="button">Run</button>

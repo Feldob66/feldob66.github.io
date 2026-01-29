@@ -36,6 +36,7 @@ function setLanguage(lang) {
 
 // Global drag ghost element
 let dragGhost = null;
+let darkModeUnlocked = localStorage.getItem('darkModeUnlocked') === 'true';
 
 function createDragGhost(element) {
     // Only show drag ghost on touch devices (tablets/phones)
@@ -124,6 +125,9 @@ function updateDragGhostPosition(x, y) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Declare theme variables at the top so they're accessible to all listeners
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme') || 'light';
 
     // Disable image dragging and selection globally
     document.querySelectorAll('img').forEach(img => {
@@ -144,6 +148,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const newLang = document.documentElement.lang === 'en' ? 'hu' : 'en';
         setLanguage(newLang);
     });
+
+    // --- Dark Mode toggle ---
+    // Apply saved theme on load
+    if (savedTheme === 'dark') {
+        document.body.classList.add('darkmode');
+    }
+
+    // Update theme toggle active state
+    function updateThemeToggleState() {
+        const isDark = document.body.classList.contains('darkmode');
+        document.querySelectorAll('.theme-option').forEach(opt => {
+            opt.classList.toggle('active', 
+                (isDark && opt.dataset.theme === 'dark') || 
+                (!isDark && opt.dataset.theme === 'light')
+            );
+        });
+    }
+
+    themeToggle?.addEventListener('click', () => {
+        document.body.classList.toggle('darkmode');
+        const isDark = document.body.classList.contains('darkmode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        
+        // Unlock dark mode toggle on first toggle
+        if (!darkModeUnlocked) {
+            darkModeUnlocked = true;
+            localStorage.setItem('darkModeUnlocked', 'true');
+        }
+        
+        updateThemeToggleState();
+    });
+
+    // Show theme toggle if unlocked and update its state
+    if (darkModeUnlocked && themeToggle) {
+        themeToggle.classList.remove('hidden');
+        updateThemeToggleState();
+    }
 
     // --- Link card ripple + logging ---
     document.querySelectorAll('.link-card').forEach(card => {
@@ -243,7 +284,7 @@ const miniGame = document.getElementById('miniGame');
 miniGame?.addEventListener('click', e => e.stopPropagation());
 
 const langToggleBtn = document.getElementById('langToggle');
-const openMiniGameCard = document.querySelector('.link-card-header');
+const openMiniGameCard = document.querySelector('.link-card-header.interactive');
 const closeMiniGameBtn = document.getElementById('miniGameClose');
 const modeToggleBtn = document.getElementById('miniGameModeToggle');
 
@@ -280,12 +321,18 @@ openMiniGameCard?.addEventListener('click', e => {
     e.preventDefault();
     miniGame.classList.remove('hidden');
     langToggleBtn.style.display = 'none';
+    if (themeToggle) {
+        themeToggle.classList.add('hidden');
+    }
 });
 
 closeMiniGameBtn?.addEventListener('click', e => {
     e.stopPropagation();
     miniGame.classList.add('hidden');
     langToggleBtn.style.display = '';
+    if (darkModeUnlocked && themeToggle) {
+        themeToggle.classList.remove('hidden');
+    }
 });
 
 // --- Mode Toggle ---
@@ -493,21 +540,44 @@ function syncVisualToCode() {
 let draggedCode = null;
 let touchStartX = 0;
 let touchStartY = 0;
+// Helper function to update placeholder draggable state
+function updatePlaceholderDraggable(ph) {
+    const isEmpty = ph.textContent.trim() === '';
+    if (!isEmpty) {
+        ph.setAttribute('draggable', 'true');
+        ph.style.cursor = 'grab';
+    } else {
+        ph.removeAttribute('draggable');
+        ph.style.cursor = 'default';
+    }
+}
+
 const codePlaceholders = document.querySelectorAll('#code-mode-container .placeholder');
 
 codePlaceholders.forEach(ph => {
-    ph.setAttribute('draggable', 'true');
+    const isEmpty = ph.textContent.trim() === '';
+    
+    // Set initial draggable state
+    if (!isEmpty) {
+        ph.setAttribute('draggable', 'true');
+        ph.style.cursor = 'grab';
+    } else {
+        ph.removeAttribute('draggable');
+        ph.style.cursor = 'default';
+    }
+    
     // Prevent image selection and focus
     ph.style.userSelect = 'none';
     ph.style.WebkitUserSelect = 'none';
     ph.style.WebkitTouchCallout = 'none';
-    ph.style.cursor = 'grab';
     ph.querySelectorAll('*').forEach(child => {
         child.style.pointerEvents = 'none';
     });
 
+    // Attach drag listeners to ALL placeholders, but check draggable state on initiation
     // Mouse drag
     ph.addEventListener('dragstart', (e) => {
+        if (ph.getAttribute('draggable') !== 'true') return; // Only drag if currently draggable
         draggedCode = ph;
         ph.classList.add('dragging');
         createDragGhost(ph);
@@ -527,32 +597,9 @@ codePlaceholders.forEach(ph => {
         removeDragGhost();
     });
 
-    ph.addEventListener('dragover', e => {
-        e.preventDefault();
-        ph.classList.add('highlight');
-    });
-
-    ph.addEventListener('dragleave', () => {
-        ph.classList.remove('highlight');
-    });
-
-    ph.addEventListener('drop', e => {
-        e.preventDefault();
-        ph.classList.remove('highlight');
-        if (!draggedCode || draggedCode === ph) return;
-        if (draggedCode.dataset.type !== ph.dataset.type) return;
-        
-        const temp = ph.innerHTML;
-        ph.innerHTML = draggedCode.innerHTML;
-        draggedCode.innerHTML = temp;
-
-        const tempRot = ph.dataset.rotated;
-        ph.dataset.rotated = draggedCode.dataset.rotated;
-        draggedCode.dataset.rotated = tempRot;
-    });
-
     // Touch drag (phone support)
     ph.addEventListener('touchstart', (e) => {
+        if (ph.getAttribute('draggable') !== 'true') return; // Only drag if currently draggable
         draggedCode = ph;
         ph.classList.add('dragging');
         touchStartX = e.touches[0].clientX;
@@ -597,6 +644,10 @@ codePlaceholders.forEach(ph => {
                 const tempRot = targetPh.dataset.rotated;
                 targetPh.dataset.rotated = draggedCode.dataset.rotated;
                 draggedCode.dataset.rotated = tempRot;
+                
+                // Update draggable state for both placeholders
+                updatePlaceholderDraggable(draggedCode);
+                updatePlaceholderDraggable(targetPh);
             }
         }
         
@@ -605,6 +656,35 @@ codePlaceholders.forEach(ph => {
         // Remove visual feedback
         ph.style.opacity = '1';
         removeDragGhost();
+    });
+
+    // Drop handlers apply to all placeholders
+    ph.addEventListener('dragover', e => {
+        e.preventDefault();
+        ph.classList.add('highlight');
+    });
+
+    ph.addEventListener('dragleave', () => {
+        ph.classList.remove('highlight');
+    });
+
+    ph.addEventListener('drop', e => {
+        e.preventDefault();
+        ph.classList.remove('highlight');
+        if (!draggedCode || draggedCode === ph) return;
+        if (draggedCode.dataset.type !== ph.dataset.type) return;
+        
+        const temp = ph.innerHTML;
+        ph.innerHTML = draggedCode.innerHTML;
+        draggedCode.innerHTML = temp;
+
+        const tempRot = ph.dataset.rotated;
+        ph.dataset.rotated = draggedCode.dataset.rotated;
+        draggedCode.dataset.rotated = tempRot;
+        
+        // Update draggable state for both placeholders after swap
+        updatePlaceholderDraggable(draggedCode);
+        updatePlaceholderDraggable(ph);
     });
 });
 
@@ -661,6 +741,17 @@ document.querySelectorAll('#code-mode-container .executeBtn').forEach(btn => {
                 }
                 else if (funcText.includes('toggle')) {
                     document.body.classList.toggle('darkmode');
+                    const isDark = document.body.classList.contains('darkmode');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                    
+                    // Unlock dark mode toggle on first toggle via minigame
+                    if (!darkModeUnlocked) {
+                        darkModeUnlocked = true;
+                        localStorage.setItem('darkModeUnlocked', 'true');
+                        const themeToggle = document.getElementById('themeToggle');
+                        themeToggle?.classList.remove('hidden');
+                    }
+                    
                     consoleEl.innerText = texts[lang].darkMode;
                     consoleEl.style.color = "#50fa7b";
                 }
@@ -908,6 +999,17 @@ document.querySelectorAll('#visual-mode-container .executeBtn').forEach(btn => {
         } else if (type === 'emojis') {
             if (inner.id === 'switch') {
                 document.body.classList.toggle('darkmode');
+                const isDark = document.body.classList.contains('darkmode');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                
+                // Unlock dark mode toggle on first toggle via minigame
+                if (!darkModeUnlocked) {
+                    darkModeUnlocked = true;
+                    localStorage.setItem('darkModeUnlocked', 'true');
+                    const themeToggle = document.getElementById('themeToggle');
+                    themeToggle?.classList.remove('hidden');
+                }
+                
                 consoleEl.innerText = texts[lang].darkMode;
                 consoleEl.style.color = "#50fa7b";
             } else if (inner.id === 'rotator') {
