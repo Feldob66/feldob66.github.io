@@ -252,24 +252,24 @@ const texts = {
     en: {
         run: "Run",
         incomplete: "Function is incomplete",
-        langToggled: "Language toggled to",
-        darkMode: "Dark mode toggled",
+        langToggled: "Language changed!",
+        darkMode: "Theme changed!",
         demoText: "Hello World!",
         incompleteVisual: "Function incomplete",
-        swapped: "Emojis swapped!",
-        textRotated: "Text rotated!",
+        swapped: "Options order swapped!",
+        optionsRotated: "Options order swapped!",
         showVisual: "Show Visual",
         showCode: "Show Code"
     },
     hu: {
         run: "Futtatás",
         incomplete: "A függvény hiányos",
-        langToggled: "Nyelv váltva:",
-        darkMode: "Sötét mód váltva",
+        langToggled: "Nyelv megváltoztatva!",
+        darkMode: "Téma megváltoztatva!",
         demoText: "Szia Világ!",
         incompleteVisual: "Funkció hiányos",
-        swapped: "Emojik megcserélve!",
-        textRotated: "Szöveg forgatva!",
+        swapped: "Opciók sorrendeje felcserélve!",
+        optionsRotated: "Opciók sorrendeje felcserélve!",
         showVisual: "Vizuális Mód",
         showCode: "Kód Mód"
     }
@@ -302,6 +302,8 @@ modeToggleBtn?.addEventListener('click', () => {
         visualContainer.classList.remove('hidden');
         visualContainer.style.display = 'flex';
         modeToggleBtn.textContent = texts[lang].showCode;
+        // what are we looking for at visual mode when swapping between flags?
+
     } else {
         syncVisualToCode();
         currentMode = 'code';
@@ -415,8 +417,8 @@ function syncCodeToVisual() {
 
         // Determine Donut
         let donutId = null;
-        if (optionsText.includes("optionsEN") || optionsText.includes("'EN'")) donutId = "flags";
-        else if (optionsText.includes("emojis") || optionsText.includes("'☀️'")) donutId = "emojis";
+        if (optionsText.includes("'EN'") || optionsText.includes("'HU'")) donutId = "flags";
+        else if (optionsText.includes("'☀️'") || optionsText.includes("'🌙'")) donutId = "emojis";
         else if (optionsText === "") donutId = "mode"; // Default/Empty
 
         if (donutId) {
@@ -426,9 +428,9 @@ function syncCodeToVisual() {
 
         // Determine Inner
         let innerId = null;
-        if (funcText.includes("langToggle") || funcText.includes("switch")) innerId = "switch";
+        if (funcText.includes("toggle")) innerId = "switch";
         else if (funcText.includes("rotate")) innerId = "rotator";
-        else if (funcText === "") innerId = "mode-switch"; // Default/Empty logic
+        else if (funcText === "") innerId = "empty-inner"; // Default/Empty logic - show empty outline
 
         if (innerId) {
             const el = createVisualElement('inner', innerId, zone);
@@ -454,9 +456,9 @@ function syncVisualToCode() {
         if (donut) {
             const type = donut.dataset.type;
             if (type === 'flags') {
-                optText = "const optionsEN = ['EN','HU'];";
+                optText = "const options = ['EN','HU'];";
             } else if (type === 'emojis') {
-                optText = "const emojis = ['☀️','🌙'];";
+                optText = "const options = ['☀️','🌙'];";
             } else if (type === 'mode') {
                 // Keep empty or specific text
                 optText = ""; 
@@ -466,12 +468,12 @@ function syncVisualToCode() {
         if (inner) {
             const id = inner.id;
             if (id === 'switch') {
-                if (optText.includes('optionsEN')) funText = "langToggle(optionsEN[1]);";
-                else if (optText.includes('emojis')) funText = "langToggle(emojis[1]);"; // Or toggle logic
+                if (optText.includes('options')) funText = "toggle(options);";
+                else if (optText.includes('emojis')) funText = "toggle(options);"; // Or toggle logic
                 else funText = "langToggle();";
             } else if (id === 'rotator') {
-                if (optText.includes('optionsEN')) funText = "rotate(optionsEN);";
-                else if (optText.includes('emojis')) funText = "rotate(emojis);";
+                if (optText.includes('options')) funText = "rotate(options);";
+                else if (optText.includes('emojis')) funText = "rotate(options);";
                 else funText = "rotate();";
             } else if (id === 'mode-switch') {
                 funText = "";
@@ -520,6 +522,8 @@ codePlaceholders.forEach(ph => {
     ph.addEventListener('dragend', () => {
         draggedCode = null;
         ph.classList.remove('dragging');
+        // Remove visual feedback
+        ph.style.opacity = '1';
         removeDragGhost();
     });
 
@@ -627,19 +631,19 @@ document.querySelectorAll('#code-mode-container .executeBtn').forEach(btn => {
         try {
             // FLAGS LANGUAGE LOGIC
             if (optionsText.includes('EN') || optionsText.includes('HU')) {
-                if (funcText.includes('langToggle')) {
+                if (funcText.includes('toggle')) {
                     const newLang = lang === 'en' ? 'hu' : 'en';
                     setLanguage(newLang);
                     
-                    consoleEl.innerText = `${texts[newLang].langToggled} ${newLang.toUpperCase()}`;
+                    consoleEl.innerText = `${texts[newLang].langToggled}`;
                     consoleEl.style.color = "#50fa7b";
                 }
                 else if (funcText.includes('rotate')) {
                     const matches = optionsText.match(/'([^']+)'/g);
                     if (matches && matches.length === 2) {
                         const newOptions = [matches[1].replace(/'/g,''), matches[0].replace(/'/g,'')];
-                        optionsPH.innerText = `const optionsEN = ['${newOptions[0]}','${newOptions[1]}'];`;
-                        consoleEl.innerText = `Flags rotated: ${newOptions.join(', ')}`;
+                        optionsPH.innerText = `const options = ['${newOptions[0]}','${newOptions[1]}'];`;
+                        consoleEl.innerText = texts[lang].optionsRotated;
                         consoleEl.style.color = "#50fa7b";
                     }
                 }
@@ -652,10 +656,10 @@ document.querySelectorAll('#code-mode-container .executeBtn').forEach(btn => {
                     const newOrder = rotated ? ['☀️','🌙'] : ['🌙','☀️'];
                     optionsPH.innerText = `const emojis = ['${newOrder[0]}','${newOrder[1]}'];`;
                     optionsPH.dataset.rotated = (!rotated).toString();
-                    consoleEl.innerText = `Emoji order rotated: ${newOrder.join(' ')}`;
+                    consoleEl.innerText = texts[lang].optionsRotated;
                     consoleEl.style.color = "#50fa7b";
                 }
-                else if (funcText.includes('langToggle')) {
+                else if (funcText.includes('toggle')) {
                     document.body.classList.toggle('darkmode');
                     consoleEl.innerText = texts[lang].darkMode;
                     consoleEl.style.color = "#50fa7b";
@@ -679,6 +683,15 @@ let touchStartYVisual = 0;
 
 // Enable dragging for donuts and inner circles
 document.querySelectorAll('.donut, .inner-circle').forEach(el => {
+    // Skip empty-inner - it's just a decoration
+    if (el.id === 'empty-inner') {
+        el.style.userSelect = 'none';
+        el.style.WebkitUserSelect = 'none';
+        el.style.cursor = 'default';
+        el.style.pointerEvents = 'none';
+        return; // Don't attach drag handlers
+    }
+    
     // Prevent image selection and focus
     el.style.userSelect = 'none';
     el.style.WebkitUserSelect = 'none';
@@ -881,7 +894,7 @@ document.querySelectorAll('#visual-mode-container .executeBtn').forEach(btn => {
             if (inner.id === 'switch') {
                 const newLang = lang === "en" ? "hu" : "en";
                 setLanguage(newLang);
-                consoleEl.innerText = `${texts[newLang].langToggled} ${newLang.toUpperCase()}`;
+                consoleEl.innerText = `${texts[newLang].langToggled}`;
                 consoleEl.style.color = "#50fa7b";
             } else if (inner.id === 'rotator') {
                 if (top.tagName === 'IMG') {
@@ -889,7 +902,7 @@ document.querySelectorAll('#visual-mode-container .executeBtn').forEach(btn => {
                     top.src = bottom.src;
                     bottom.src = temp;
                 }
-                consoleEl.innerText = texts[lang].textRotated;
+                consoleEl.innerText = texts[lang].optionsRotated;
                 consoleEl.style.color = "#50fa7b";
             }
         } else if (type === 'emojis') {

@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-en = "Félix Huszár | Portfolio" data-hu = "Huszár Félix | Portfólió">Félix Huszár | Portfolio</title>
-    <meta name="description" content="Félix Huszár - Full Stack Developer portfolio with interactive programming projects and web experiments">
-    <meta property="og:title" content="Félix Huszár | Portfolio">
-    <meta property="og:description" content="Interactive developer portfolio with minigames and web tech playground">
-    <meta property="og:image" content="images/pfp.png">
+    <meta name="description" content="Félix Huszár - Full Stack Developer portfolio featuring interactive programming minigames, Unity projects, and web playground. Bilingual (EN/HU) developer.">
+    <meta property="og:title" content="Félix Huszár | Full Stack Developer">
+    <meta property="og:description" content="Interactive portfolio with programming minigames and Unity projects">
+    <meta property="og:image" content="https://feldob66.github.io/images/pfp.png">
+    <meta property="og:url" content="https://feldob66.github.io/">
     <link rel="icon" type="image/x-icon" href="images/favicon.ico">
     <link rel="stylesheet" href="styles/styles.css">
 </head>
@@ -59,9 +60,9 @@
                         <!-- ToggleSwitch Zone (Left) -->
                         <div class="game-zone" data-zone="left">
                             <pre>
-function toggleSwitch() {
-    <span class="placeholder" data-type="options" data-rotated="false">const optionsEN = ['EN','HU'];</span>
-    <span class="placeholder" data-type="functionality">langToggle(optionsEN[1]);</span>
+function toggleLang() {
+    <span class="placeholder" data-type="options" data-rotated="false">const options = ['EN','HU'];</span>
+    <span class="placeholder" data-type="functionality">toggle(options);</span>
 }
                             </pre>
                             <button class="executeBtn" type="button">Run</button>
@@ -84,8 +85,8 @@ function toggleMode() {
                         <div class="game-zone" data-zone="right">
                             <pre>
 function rotate(value) {
-    <span class="placeholder" data-type="options" data-rotated="false">const emojis = ['☀️','🌙'];</span>
-    <span class="placeholder" data-type="functionality">rotate(emojis);</span>
+    <span class="placeholder" data-type="options" data-rotated="false">const options = ['☀️','🌙'];</span>
+    <span class="placeholder" data-type="functionality">rotate(options);</span>
 }
                             </pre>
                             <button class="executeBtn" type="button">Run</button>
@@ -143,6 +144,9 @@ function rotate(value) {
 
                             <!-- Right inner-circle -->
                             <div class="inner-circle" draggable="true" data-zone="right" id="rotator">🔄</div>
+
+                            <!-- Middle inner-circle (empty, just outline) -->
+                            <div class="inner-circle" data-zone="middle" id="empty-inner"></div>
 
                         </div>
                     </div>

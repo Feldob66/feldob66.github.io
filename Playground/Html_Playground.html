@@ -176,7 +176,21 @@
 
         <div class="playground-card">
             <h2>Unicode ASCII Explorer</h2>
-            <p>Iterate through the global character library.</p>
+            <p data-en="Iterate through the global character library." data-hu="Böngéssz a globális karakterkönyvtáron keresztül.">Iterate through the global character library.</p>
+            <p>
+                <span data-en="You can type this character using:" 
+                    data-hu="Ezt a karaktert így tudod begépelni:">
+                    You can type this character using:
+                </span>
+                <strong>
+                    Alt + <span id="altCodeValue">0</span>
+                </strong>
+                <span data-en="(on the numeric keypad)"
+                    data-hu="(a numerikus billentyűzeten)">
+                    (on the numeric keypad)
+                </span>
+            </p>
+
             <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                 <input type="number" id="charCodeInput" class="btndsbl2" min="0" style="flex: 1; max-width: 200px; text-align: center; font-size: 16px; padding: 10px; border: 1px solid rgba(255,200,100,0.3); border-radius: 8px; background: rgba(0,0,0,0.2); color: #E0E0E0;" disabled>
                 <span style="font-size: 20px; font-weight: bold;">➡️</span>
@@ -281,11 +295,19 @@
     function updateCharacterDisplay() {
         const charCodeInput = document.getElementById('charCodeInput');
         const demoBtn = document.getElementById('demoBtn');
+        const altCodeValue = document.getElementById('altCodeValue');
 
         charCodeInput.value = charNum;
         demoBtn.textContent = String.fromCodePoint(charNum);
+
+        // Update ALT code display (if present)
+        if (altCodeValue) {
+            altCodeValue.textContent = charNum;
+        }
+
         localStorage.setItem('unicodeCharNum', charNum);
     }
+
 
     /* ---------- Edit Mode ---------- */
     function enterEditMode() {
@@ -448,6 +470,16 @@
             });
         }
     });
+
+    // ----------------- Self Copy -----------------
+    function SelfCopy(emoji) {
+        navigator.clipboard.writeText(emoji).then(() => {
+            alert((currentLang === 'en' ? 'Copied: ' : 'Másolva: ') + emoji);
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            alert(currentLang === 'en' ? 'Copy failed!' : 'Másolás sikertelen!');
+        });
+    }
     </script>
 
 </body>
