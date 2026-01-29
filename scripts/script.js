@@ -734,7 +734,7 @@ document.querySelectorAll('#code-mode-container .executeBtn').forEach(btn => {
                 const rotated = optionsPH.dataset.rotated === 'true';
                 if (funcText.includes('rotate')) {
                     const newOrder = rotated ? ['☀️','🌙'] : ['🌙','☀️'];
-                    optionsPH.innerText = `const emojis = ['${newOrder[0]}','${newOrder[1]}'];`;
+                    optionsPH.innerText = `const options = ['${newOrder[0]}','${newOrder[1]}'];`;
                     optionsPH.dataset.rotated = (!rotated).toString();
                     consoleEl.innerText = texts[lang].optionsRotated;
                     consoleEl.style.color = "#50fa7b";
