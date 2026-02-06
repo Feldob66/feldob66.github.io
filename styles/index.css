@@ -1,0 +1,228 @@
+/* Base reset and globals */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Prevent image dragging and selection globally */
+img {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(180deg, #3a3a3f 0%, #8d0218 36%, #f68d15 100%);
+    color: #333333;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+/* Language toggle */
+.lang-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.lang-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.lang-option {
+    color: #999;
+    transition: color 0.3s ease;
+    cursor: pointer;
+}
+
+.lang-option.active {
+    color: #667eea;
+    font-weight: 700;
+}
+
+.lang-divider {
+    margin: 0 8px;
+    color: #ddd;
+}
+
+/* Theme toggle */
+.theme-toggle {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.theme-toggle.hidden {
+    display: none;
+}
+
+.theme-option {
+    color: #999;
+    transition: color 0.3s ease;
+    cursor: pointer;
+}
+
+.theme-option.active {
+    color: #f68d15;
+    font-weight: 700;
+}
+
+.theme-divider {
+    margin: 0 8px;
+    color: #ddd;
+}
+
+/* Profile header */
+.profile {
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeInDown 0.6s ease-out;
+}
+
+.avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0 auto 20px;
+    border: 4px solid white;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.profile h1 {
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tagline {
+    font-size: 1em;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    animation: fadeIn 0.6s ease-out 0.7s;
+    animation-fill-mode: both;
+}
+
+footer p {
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Shared utilities */
+.hidden {
+    display: none;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Dark mode base */
+body.darkmode {
+    background: linear-gradient(180deg, #3a3a3f 0%, #8d0218 36%, #f68d15 100%) !important;
+    color: #f0f0f0;
+}
+
+body.darkmode .lang-toggle,
+body.darkmode .theme-toggle {
+    background: #333;
+    color: #f0f0f0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    body {
+        padding: 20px 16px;
+    }
+
+    .lang-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+
+    .theme-toggle {
+        top: 48px;
+        right: 10px;
+        padding: 6px 12px;
+        font-size: 0.85em;
+    }
+
+    .profile h1 {
+        font-size: 1.75em;
+    }
+
+    .tagline {
+        font-size: 1em;
+    }
+}

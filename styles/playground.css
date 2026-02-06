@@ -1,0 +1,117 @@
+/* Playground page overrides */
+body {
+    color: #c0c0c0;
+}
+
+.container {
+    max-width: 800px;
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+
+.playground-card {
+    background: rgba(255, 165, 0, 0.15);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 200, 100, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    text-align: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.playground-card h2,
+.playground-card h3,
+.playground-card p,
+.playground-card span {
+    color: #e0e0e0;
+}
+
+input,
+button {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    margin: 5px;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background: rgba(255, 165, 0, 0.3);
+    cursor: pointer;
+    transform: translateY(-1px);
+}
+
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+    gap: 10px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.result-btn {
+    background: #000;
+    color: #ff7f50;
+    border: 1px solid #ff7f50;
+    min-width: 80px;
+    font-weight: bold;
+}
+
+.btndsbl2 {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: #ffa500;
+    color: #c0c0c0;
+    cursor: default;
+    min-width: 150px;
+}
+
+footer button {
+    background: rgba(255, 70, 70, 0.2);
+    border-color: rgba(255, 70, 70, 0.4);
+}
+
+/* Dark mode styles */
+body.darkmode {
+    background: linear-gradient(180deg, #1a1a1f 0%, #4d0109 36%, #8d4608 100%);
+}
+
+body.darkmode .playground-card {
+    background: rgba(50, 50, 50, 0.4);
+    border-color: rgba(255, 200, 100, 0.2);
+}
+
+body.darkmode .playground-card h2,
+body.darkmode .playground-card h3,
+body.darkmode .playground-card p,
+body.darkmode .playground-card span {
+    color: #f0f0f0;
+}
+
+body.darkmode .lang-toggle,
+body.darkmode .theme-toggle {
+    background: #333;
+    color: #f0f0f0;
+}
+
+body.darkmode input,
+body.darkmode button {
+    background: rgba(50, 50, 50, 0.5);
+    border-color: rgba(255, 165, 0, 0.3);
+    color: #f0f0f0;
+}
+
+body.darkmode button:hover {
+    background: rgba(255, 165, 0, 0.4);
+}

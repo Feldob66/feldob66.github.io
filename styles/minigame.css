@@ -1,0 +1,407 @@
+/* Minigame container */
+.tryItUrselfMiniGame {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: #f5f5f5;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Minigame explainer */
+.minigame-explainer {
+    background: linear-gradient(135deg, #667eea22 0%, #764ba233 100%);
+    border-left: 3px solid #667eea;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.minigame-explainer p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #555;
+    line-height: 1.5;
+}
+
+body.darkmode .minigame-explainer {
+    background: linear-gradient(135deg, #667eea11 0%, #764ba222 100%);
+    border-left-color: #50fa7b;
+}
+
+body.darkmode .minigame-explainer p {
+    color: #ddd;
+}
+
+/* Header and zones */
+.miniGame-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.miniGame-zones {
+    display: flex;
+    gap: 12px;
+}
+
+/* Game zone with images */
+.game-zone {
+    flex: 1;
+    aspect-ratio: 1 / 1;
+    min-height: 120px;
+    border: 2px dashed #ccc;
+    border-radius: 50%;
+    padding: 8px;
+    overflow: hidden;
+}
+
+.game-piece {
+    background: white;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 6px;
+    cursor: grab;
+    text-align: center;
+    user-select: none;
+}
+
+.game-piece.dragging {
+    opacity: 0.5;
+}
+
+/* Code zone with code */
+.code-zone {
+    flex: 1;
+    min-height: 120px;
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 8px;
+    background: #272822;
+    color: #f8f8f2;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.85em;
+    overflow-x: auto;
+}
+
+.code-piece {
+    background: white;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 6px;
+    cursor: grab;
+    text-align: center;
+    user-select: none;
+}
+
+.code-piece.dragging {
+    opacity: 0.5;
+}
+
+.piece-title {
+    display: block;
+    font-size: 0.75em;
+    color: #666;
+}
+
+/* Shared minigame styles */
+.miniGame-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 100%;
+}
+
+button.executeBtn {
+    margin-top: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: none;
+    background: #50fa7b;
+    color: #1e1e2f;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button.executeBtn:hover {
+    background: #3ecf60;
+}
+
+.resultConsole {
+    margin-top: 8px;
+    min-height: 20px;
+    font-size: 0.85em;
+    color: #ffb86c;
+    text-align: center;
+    width: 100%;
+    word-wrap: break-word;
+}
+
+.highlight {
+    outline: 2px dashed #50fa7b;
+}
+
+body.darkmode .tryItUrselfMiniGame {
+    background: #2d2d2d;
+    color: #f0f0f0;
+}
+
+/* Code mode styles */
+#code-mode-container .game-zone {
+    background: #2d2d44;
+    padding: 20px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+    min-height: auto;
+    aspect-ratio: auto;
+    overflow: visible;
+    flex: 1 1 280px;
+    box-sizing: border-box;
+}
+
+body.darkmode #code-mode-container .game-zone {
+    background: #2a2a2a;
+    color: #f0f0f0;
+}
+
+#code-mode-container pre {
+    background: #3b3b5c;
+    padding: 16px;
+    border-radius: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    min-height: 180px;
+    color: #f8f8f2;
+    font-size: 0.85em;
+    position: relative;
+    margin-bottom: 0;
+    overflow-x: auto;
+}
+
+body.darkmode #code-mode-container pre {
+    background: #1e1e1e;
+    color: #f0f0f0;
+}
+
+#code-mode-container .placeholder {
+    display: inline-block;
+    background: #6272a4;
+    border-radius: 6px;
+    padding: 2px 4px;
+    min-width: 60px;
+    min-height: 18px;
+    margin: 0 2px;
+    color: #f8f8f2;
+    cursor: grab;
+    transition: transform 0.2s ease;
+}
+
+#code-mode-container .placeholder[draggable="true"] {
+    opacity: 1;
+}
+
+#code-mode-container .placeholder:not([draggable="true"]) {
+    opacity: 0.5;
+    cursor: default;
+}
+
+#code-mode-container .placeholder:empty {
+    min-width: 80px;
+    opacity: 0.5;
+    flex-shrink: 0;
+    cursor: default;
+}
+
+#code-mode-container .placeholder:empty:hover {
+    transform: none;
+}
+
+#code-mode-container .placeholder[draggable="true"]:hover {
+    transform: scale(1.05);
+}
+
+#code-mode-container .placeholder:active {
+    cursor: grabbing;
+}
+
+body.darkmode #code-mode-container .placeholder {
+    background: #3c3c3c;
+    color: #f0f0f0;
+}
+
+#code-mode-container .placeholder.dragging {
+    opacity: 0.5;
+}
+
+/* Visual mode styles */
+#visual-mode-container .visual-zone {
+    width: 100%;
+    max-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: visible;
+}
+
+#visual-mode-container .slot {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 2px dashed #6272a4;
+    position: relative;
+    margin-bottom: 12px;
+}
+
+#visual-mode-container .slot .cut-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    border-top: 2px dashed #50fa7b;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+#visual-mode-container .inner-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #50fa7b;
+    font-size: 2em;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    border: 2px dashed #ffb86c;
+    z-index: 20;
+    transition: transform 0.2s ease;
+}
+
+#visual-mode-container .inner-circle:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+#visual-mode-container .inner-circle:active {
+    cursor: grabbing;
+}
+
+#visual-mode-container .donut {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    transition: transform 0.2s ease;
+}
+
+#visual-mode-container .donut:hover {
+    transform: scale(1.05);
+}
+
+#visual-mode-container .donut:active {
+    cursor: grabbing;
+}
+
+#visual-mode-container .donut-piece {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #6272a4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    position: absolute;
+}
+
+#visual-mode-container .top-piece {
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#visual-mode-container .bottom-piece {
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#visual-mode-container .donut-piece img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
+.miniGame-container.hidden {
+    display: none;
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .tryItUrselfMiniGame {
+        padding: 12px;
+        overflow-x: hidden;
+    }
+
+    .miniGame-container {
+        gap: 12px;
+    }
+
+    #code-mode-container .game-zone {
+        max-width: 100%;
+        padding: 12px;
+    }
+
+    #code-mode-container pre {
+        font-size: 0.75em;
+        padding: 12px;
+    }
+
+    #visual-mode-container .visual-zone {
+        max-width: 150px;
+    }
+
+    #visual-mode-container .slot {
+        width: 120px;
+        height: 120px;
+    }
+
+    .minigame-explainer p {
+        font-size: 0.85em;
+    }
+}

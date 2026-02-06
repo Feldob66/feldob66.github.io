@@ -1,282 +1,4 @@
 // ====================
-// GLOBAL LANGUAGE SYSTEM
-// ====================
-
-function setLanguage(lang) {
-    const langOptions = document.querySelectorAll('.lang-option');
-
-    // Update active indicator
-    langOptions.forEach(option => {
-        option.classList.toggle(
-            'active',
-            option.getAttribute('data-lang') === lang
-        );
-    });
-
-    // Update translatable text
-    document.querySelectorAll('[data-en][data-hu]').forEach(el => {
-        const text = el.getAttribute(`data-${lang}`);
-        if (text) el.textContent = text;
-    });
-
-    // Persist + document state
-    document.documentElement.lang = lang;
-    localStorage.setItem('language', lang);
-
-    // Update minigame if function exists
-    if (typeof updateMiniGameLanguage === 'function') {
-        updateMiniGameLanguage(lang);
-    }
-}
-
-
-// ====================
-// MAIN PAGE LOGIC
-// ====================
-
-// Global drag ghost element
-let dragGhost = null;
-let darkModeUnlocked = localStorage.getItem('darkModeUnlocked') === 'true';
-
-function createDragGhost(element) {
-    // Only show drag ghost on touch devices (tablets/phones)
-    // On desktop/laptop with mouse, the cursor is already visible so no need for ghost
-    const isTouchDevice = window.matchMedia('(hover: none)').matches;
-    
-    if (!isTouchDevice) {
-        return null; // Don't create ghost on devices with mouse/hover capability
-    }
-    
-    if (dragGhost) dragGhost.remove();
-    
-    dragGhost = element.cloneNode(true);
-    
-    // Copy exact dimensions from original
-    const rect = element.getBoundingClientRect();
-    dragGhost.style.width = rect.width + 'px';
-    dragGhost.style.height = rect.height + 'px';
-    
-    // Position and styling
-    dragGhost.style.position = 'fixed';
-    dragGhost.style.pointerEvents = 'none';
-    dragGhost.style.zIndex = '10000';
-    dragGhost.style.opacity = '0.8';
-    dragGhost.style.transform = 'translate(-50%, -50%)';
-    dragGhost.style.boxShadow = '0 4px 20px rgba(80, 250, 123, 0.6)';
-    dragGhost.style.transition = 'none';
-    
-    // Preserve all computed styles
-    const computed = window.getComputedStyle(element);
-    dragGhost.style.background = computed.background;
-    dragGhost.style.border = computed.border;
-    dragGhost.style.borderRadius = computed.borderRadius;
-    dragGhost.style.padding = computed.padding;
-    dragGhost.style.fontSize = computed.fontSize;
-    dragGhost.style.fontFamily = computed.fontFamily;
-    dragGhost.style.color = computed.color;
-    dragGhost.style.fontWeight = computed.fontWeight;
-    dragGhost.style.textAlign = computed.textAlign;
-    dragGhost.style.lineHeight = computed.lineHeight;
-    dragGhost.style.whiteSpace = 'pre-wrap'; // Preserve text wrapping
-    dragGhost.style.wordWrap = 'break-word';
-    dragGhost.style.overflowWrap = 'break-word';
-    
-    // For visual mode elements (donuts/circles), preserve layout
-    if (element.classList.contains('donut') || element.classList.contains('inner-circle')) {
-        dragGhost.style.display = computed.display;
-        dragGhost.style.justifyContent = computed.justifyContent;
-        dragGhost.style.alignItems = computed.alignItems;
-        
-        // Copy styles for all children
-        const originalChildren = element.querySelectorAll('*');
-        const cloneChildren = dragGhost.querySelectorAll('*');
-        originalChildren.forEach((child, index) => {
-            if (cloneChildren[index]) {
-                const childComputed = window.getComputedStyle(child);
-                const childClone = cloneChildren[index];
-                childClone.style.position = childComputed.position;
-                childClone.style.top = childComputed.top;
-                childClone.style.left = childComputed.left;
-                childClone.style.right = childComputed.right;
-                childClone.style.bottom = childComputed.bottom;
-                childClone.style.transform = childComputed.transform;
-                childClone.style.width = childComputed.width;
-                childClone.style.height = childComputed.height;
-            }
-        });
-    }
-    
-    document.body.appendChild(dragGhost);
-    return dragGhost;
-}
-
-function removeDragGhost() {
-    if (dragGhost) {
-        dragGhost.remove();
-        dragGhost = null;
-    }
-}
-
-function updateDragGhostPosition(x, y) {
-    if (dragGhost) {
-        dragGhost.style.left = x + 'px';
-        dragGhost.style.top = y + 'px';
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Declare theme variables at the top so they're accessible to all listeners
-    const themeToggle = document.getElementById('themeToggle');
-    const savedTheme = localStorage.getItem('theme') || 'light';
-
-    // Disable image dragging and selection globally
-    document.querySelectorAll('img').forEach(img => {
-        img.setAttribute('draggable', 'false');
-        img.style.userSelect = 'none';
-        img.style.WebkitUserSelect = 'none';
-        img.style.WebkitTouchCallout = 'none';
-        img.style.pointerEvents = 'none';
-    });
-
-    // --- Language toggle button ---
-    const langToggle = document.getElementById('langToggle');
-    const savedLang = localStorage.getItem('language') || 'en';
-
-    setLanguage(savedLang);
-
-    langToggle?.addEventListener('click', () => {
-        const newLang = document.documentElement.lang === 'en' ? 'hu' : 'en';
-        setLanguage(newLang);
-    });
-
-    // --- Dark Mode toggle ---
-    // Apply saved theme on load
-    if (savedTheme === 'dark') {
-        document.body.classList.add('darkmode');
-    }
-
-    // Update theme toggle active state
-    function updateThemeToggleState() {
-        const isDark = document.body.classList.contains('darkmode');
-        document.querySelectorAll('.theme-option').forEach(opt => {
-            opt.classList.toggle('active', 
-                (isDark && opt.dataset.theme === 'dark') || 
-                (!isDark && opt.dataset.theme === 'light')
-            );
-        });
-    }
-
-    themeToggle?.addEventListener('click', () => {
-        document.body.classList.toggle('darkmode');
-        const isDark = document.body.classList.contains('darkmode');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        
-        // Unlock dark mode toggle on first toggle
-        if (!darkModeUnlocked) {
-            darkModeUnlocked = true;
-            localStorage.setItem('darkModeUnlocked', 'true');
-        }
-        
-        updateThemeToggleState();
-    });
-
-    // Show theme toggle if unlocked and update its state
-    if (darkModeUnlocked && themeToggle) {
-        themeToggle.classList.remove('hidden');
-        updateThemeToggleState();
-    }
-
-    // --- Link card ripple + logging ---
-    document.querySelectorAll('.link-card').forEach(card => {
-        if (card.tagName !== 'A') return;
-
-        card.addEventListener('click', () => {
-            const ripple = document.createElement('span');
-            ripple.classList.add('ripple');
-            card.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 600);
-
-            const title = card.querySelector('h3')?.textContent;
-            //console.log(`Link clicked: ${title}`);
-        });
-
-        card.addEventListener('mouseenter', () => {
-            card.style.transition = 'all 0.3s cubic-bezier(0.4,0,0.2,1)';
-        });
-
-        // keyboard support
-        card.setAttribute('tabindex', '0');
-        card.addEventListener('keypress', e => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                card.click();
-            }
-        });
-    });
-
-    // --- View counter ---
-    const views = parseInt(localStorage.getItem('pageViews') || '0', 10);
-    localStorage.setItem('pageViews', views + 1);
-
-    console.log('Portfolio loaded');
-    console.log(`Page views: ${views + 1}`);
-    
-    // --- Back to Top Button ---
-    const backToTopBtn = document.getElementById('backToTop');
-    
-    if (backToTopBtn) {
-        //console.log('Back to Top button found');
-        let scrollAnimationId = null;
-        
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                backToTopBtn.classList.add('visible');
-                //console.log('Scroll > 300, showing button');
-            } else {
-                backToTopBtn.classList.remove('visible');
-            }
-        });
-        
-        backToTopBtn.addEventListener('click', () => {
-            // If already scrolling, cancel and snap to top instantly
-            if (scrollAnimationId !== null) {
-                cancelAnimationFrame(scrollAnimationId);
-                window.scrollTo(0, 0);
-                scrollAnimationId = null;
-                return;
-            }
-            
-            const startPosition = window.scrollY;
-            const duration = 1200; // Slower: 1.2 seconds
-            const startTime = performance.now();
-            
-            function easeOutCubic(t) {
-                return 1 - Math.pow(1 - t, 3);
-            }
-            
-            function scroll(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const easing = easeOutCubic(progress);
-                
-                window.scrollTo(0, startPosition * (1 - easing));
-                
-                if (progress < 1) {
-                    scrollAnimationId = requestAnimationFrame(scroll);
-                } else {
-                    scrollAnimationId = null;
-                }
-            }
-            
-            scrollAnimationId = requestAnimationFrame(scroll);
-        });
-    } else {
-        //console.log('Back to Top button NOT found');
-    }
-});
-
-
-// ====================
 // MINI GAME LOGIC
 // ====================
 
@@ -370,7 +92,7 @@ function createVisualElement(type, id, zone) {
     let source = null;
     if (type === 'donut') {
         source = document.querySelector(`#donuts .donut[data-type="${id}"]`);
-         // If no direct type match, fallback to zone match logic or specific types
+        // If no direct type match, fallback to zone match logic or specific types
         if (!source && zone) {
             if (id === 'flags') source = document.querySelector(`#donuts .donut[data-type="flags"]`);
             else if (id === 'emojis') source = document.querySelector(`#donuts .donut[data-type="emojis"]`);
@@ -458,7 +180,7 @@ function syncCodeToVisual() {
         const optionsText = codeZone.querySelector('.placeholder[data-type="options"]').innerText.trim();
         const funcText = codeZone.querySelector('.placeholder[data-type="functionality"]').innerText.trim();
         const visualSlot = document.querySelector(`#visual-mode-container .visual-zone[data-zone="${zone}"] .slot`);
-        
+
         // Clear slot
         visualSlot.innerHTML = '<div class="cut-line"></div>';
 
@@ -495,7 +217,7 @@ function syncVisualToCode() {
         const codeZone = document.querySelector(`#code-mode-container .game-zone[data-zone="${zone}"]`);
         const optionsPH = codeZone.querySelector('.placeholder[data-type="options"]');
         const funcPH = codeZone.querySelector('.placeholder[data-type="functionality"]');
-        
+
         // Defaults
         let optText = "";
         let funText = "";
@@ -508,7 +230,7 @@ function syncVisualToCode() {
                 optText = "const options = ['☀️','🌙'];";
             } else if (type === 'mode') {
                 // Keep empty or specific text
-                optText = ""; 
+                optText = "";
             }
         }
 
@@ -556,7 +278,7 @@ const codePlaceholders = document.querySelectorAll('#code-mode-container .placeh
 
 codePlaceholders.forEach(ph => {
     const isEmpty = ph.textContent.trim() === '';
-    
+
     // Set initial draggable state
     if (!isEmpty) {
         ph.setAttribute('draggable', 'true');
@@ -565,7 +287,7 @@ codePlaceholders.forEach(ph => {
         ph.removeAttribute('draggable');
         ph.style.cursor = 'default';
     }
-    
+
     // Prevent image selection and focus
     ph.style.userSelect = 'none';
     ph.style.WebkitUserSelect = 'none';
@@ -616,11 +338,11 @@ codePlaceholders.forEach(ph => {
         // Update ghost position to follow finger
         updateDragGhostPosition(touch.clientX, touch.clientY);
         const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-        
+
         document.querySelectorAll('.placeholder.highlight').forEach(el => {
             el.classList.remove('highlight');
         });
-        
+
         if (elementBelow && elementBelow.classList.contains('placeholder')) {
             elementBelow.classList.add('highlight');
         }
@@ -629,11 +351,11 @@ codePlaceholders.forEach(ph => {
     ph.addEventListener('touchend', (e) => {
         const touch = e.changedTouches[0];
         const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-        
+
         document.querySelectorAll('.placeholder.highlight').forEach(el => {
             el.classList.remove('highlight');
         });
-        
+
         if (elementBelow && elementBelow.classList.contains('placeholder')) {
             const targetPh = elementBelow;
             if (draggedCode && draggedCode !== targetPh && draggedCode.dataset.type === targetPh.dataset.type) {
@@ -644,13 +366,13 @@ codePlaceholders.forEach(ph => {
                 const tempRot = targetPh.dataset.rotated;
                 targetPh.dataset.rotated = draggedCode.dataset.rotated;
                 draggedCode.dataset.rotated = tempRot;
-                
+
                 // Update draggable state for both placeholders
                 updatePlaceholderDraggable(draggedCode);
                 updatePlaceholderDraggable(targetPh);
             }
         }
-        
+
         draggedCode = null;
         ph.classList.remove('dragging');
         // Remove visual feedback
@@ -673,7 +395,7 @@ codePlaceholders.forEach(ph => {
         ph.classList.remove('highlight');
         if (!draggedCode || draggedCode === ph) return;
         if (draggedCode.dataset.type !== ph.dataset.type) return;
-        
+
         const temp = ph.innerHTML;
         ph.innerHTML = draggedCode.innerHTML;
         draggedCode.innerHTML = temp;
@@ -681,7 +403,7 @@ codePlaceholders.forEach(ph => {
         const tempRot = ph.dataset.rotated;
         ph.dataset.rotated = draggedCode.dataset.rotated;
         draggedCode.dataset.rotated = tempRot;
-        
+
         // Update draggable state for both placeholders after swap
         updatePlaceholderDraggable(draggedCode);
         updatePlaceholderDraggable(ph);
@@ -714,7 +436,7 @@ document.querySelectorAll('#code-mode-container .executeBtn').forEach(btn => {
                 if (funcText.includes('toggle')) {
                     const newLang = lang === 'en' ? 'hu' : 'en';
                     setLanguage(newLang);
-                    
+
                     consoleEl.innerText = `${texts[newLang].langToggled}`;
                     consoleEl.style.color = "#50fa7b";
                 }
@@ -743,7 +465,7 @@ document.querySelectorAll('#code-mode-container .executeBtn').forEach(btn => {
                     document.body.classList.toggle('darkmode');
                     const isDark = document.body.classList.contains('darkmode');
                     localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                    
+
                     // Unlock dark mode toggle on first toggle via minigame
                     if (!darkModeUnlocked) {
                         darkModeUnlocked = true;
@@ -751,7 +473,7 @@ document.querySelectorAll('#code-mode-container .executeBtn').forEach(btn => {
                         const themeToggle = document.getElementById('themeToggle');
                         themeToggle?.classList.remove('hidden');
                     }
-                    
+
                     consoleEl.innerText = texts[lang].darkMode;
                     consoleEl.style.color = "#50fa7b";
                 }
@@ -782,7 +504,7 @@ document.querySelectorAll('.donut, .inner-circle').forEach(el => {
         el.style.pointerEvents = 'none';
         return; // Don't attach drag handlers
     }
-    
+
     // Prevent image selection and focus
     el.style.userSelect = 'none';
     el.style.WebkitUserSelect = 'none';
@@ -840,7 +562,7 @@ document.querySelectorAll('.donut, .inner-circle').forEach(el => {
     el.addEventListener('touchend', (e) => {
         const touch = e.changedTouches[0];
         const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-        
+
         if (elementBelow) {
             const slot = elementBelow.closest('.slot');
             if (slot && draggedVisual) {
@@ -858,7 +580,7 @@ document.querySelectorAll('.donut, .inner-circle').forEach(el => {
 // Shared drop logic for both mouse and touch
 function handleVisualDrop(slot, element) {
     if (!element) return;
-    
+
     let elementToDrop;
 
     // Check source parent
@@ -916,7 +638,7 @@ function handleVisualDrop(slot, element) {
             draggedVisual = null;
         });
     }
-    
+
     // Check for existing element of same type
     let existing = null;
     if (element.classList.contains('donut')) {
@@ -1001,7 +723,7 @@ document.querySelectorAll('#visual-mode-container .executeBtn').forEach(btn => {
                 document.body.classList.toggle('darkmode');
                 const isDark = document.body.classList.contains('darkmode');
                 localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                
+
                 // Unlock dark mode toggle on first toggle via minigame
                 if (!darkModeUnlocked) {
                     darkModeUnlocked = true;
@@ -1009,7 +731,7 @@ document.querySelectorAll('#visual-mode-container .executeBtn').forEach(btn => {
                     const themeToggle = document.getElementById('themeToggle');
                     themeToggle?.classList.remove('hidden');
                 }
-                
+
                 consoleEl.innerText = texts[lang].darkMode;
                 consoleEl.style.color = "#50fa7b";
             } else if (inner.id === 'rotator') {
@@ -1019,8 +741,8 @@ document.querySelectorAll('#visual-mode-container .executeBtn').forEach(btn => {
             }
         } else if (type === 'mode') {
             if (inner.id === 'switch' || inner.id === 'mode-switch') {
-                 // Just a visual feedback for now, or could toggle mode
-                consoleEl.innerText = "Function Executed"; 
+                // Just a visual feedback for now, or could toggle mode
+                consoleEl.innerText = "Function Executed";
                 consoleEl.style.color = "#50fa7b";
             }
         }
@@ -1053,70 +775,14 @@ function updateMiniGameLanguage(lang) {
 function initVisualMode() {
     // Rely on sync from code mode on first toggle, OR init specifically.
     // For now, let's keep the specific init matching the default code state.
-    
+
     // Default Code State:
     // Left: Flags + Switch
     // Middle: Empty
     // Right: Emojis + Rotator
-    
+
     // We can just call syncCodeToVisual if code is the source of truth
     syncCodeToVisual();
 }
 // Init visual mode on load
 initVisualMode();
-
-// ====================
-// VIDEO PREVIEW LOGIC
-// ====================
-
-const video = document.getElementById('szakdogaVideo');
-const gifPreview = document.querySelector('.video-gif-preview');
-const projectPreview = document.querySelector('.project-preview');
-const playButton = document.querySelector('.video-play-button');
-
-if (video && gifPreview && projectPreview && playButton) {
-    let hasStarted = false;
-
-    video.addEventListener('play', () => {
-        hasStarted = true;
-        video.setAttribute('controls', 'controls');
-        gifPreview.classList.remove('active');
-        gifPreview.style.opacity = '0';
-        playButton.classList.add('hidden');
-    });
-
-    video.addEventListener('ended', () => {
-        hasStarted = false;
-        video.removeAttribute('controls');
-        video.currentTime = 0;
-        video.load(); // Reload to show poster
-        playButton.classList.remove('hidden');
-    });
-
-    projectPreview.addEventListener('mouseenter', () => {
-        if (!hasStarted) {
-            gifPreview.style.opacity = '1';
-            gifPreview.classList.add('active');
-        }
-    });
-
-    projectPreview.addEventListener('mouseleave', () => {
-        if (!hasStarted) {
-            gifPreview.style.opacity = '0';
-            gifPreview.classList.remove('active');
-        }
-    });
-
-    // Click on GIF preview or play button to start video
-    gifPreview.addEventListener('click', () => {
-        if (!hasStarted) {
-            video.play();
-        }
-    });
-
-    playButton.addEventListener('click', () => {
-        if (!hasStarted) {
-            video.play();
-        }
-    });
-}
