@@ -27,6 +27,63 @@ body {
     color: #e0e0e0;
 }
 
+.playground-desc {
+    margin: 10px auto 16px;
+    max-width: 560px;
+    line-height: 1.5;
+}
+
+.playground-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.playground-actions input {
+    flex: 1 1 260px;
+    width: min(420px, 90%);
+}
+
+.playground-actions button {
+    min-width: 120px;
+}
+
+.replier-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: min(520px, 100%);
+    margin: 8px auto 0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 200, 100, 0.2);
+}
+
+.replier-block p {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0;
+}
+
+.replier-block input {
+    width: min(180px, 70vw);
+    margin: 0 6px;
+    text-align: center;
+}
+
+.replier-block.hidden {
+    display: none;
+}
+
 input,
 button {
     padding: 12px;

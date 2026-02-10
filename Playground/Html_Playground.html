@@ -31,47 +31,64 @@
 
         <div class="playground-card">
             <h2 data-en="Dynamic Page Header" data-hu="Dinamikus Oldalfejléc">Dynamic Page Header</h2>
-            <input placeholder="New page title..." data-en-placeholder="Type new title..." data-hu-placeholder="új oldal cím..." id="ujize">
-            <button onclick="changePageTitle()" data-en="Apply" data-hu="Alkalmaz">Apply</button>
+            <p class="playground-desc"
+                data-en="Type a new title, hit Apply, and watch this tab's name change."
+                data-hu="Írj be egy új címet, nyomd meg az Alkalmaz gombot, és figyeld, ahogy megváltozik a böngészőfül neve."
+                title="Something extra: try toggling the language after you set a custom title."
+                data-en-title="Something Extra: Try toggling the language after you set a custom title."
+                data-hu-title="Valami Plussz: Próbáld ki a nyelvváltót az egyéni címed megadása után.">
+                Type a new title, hit Apply, and watch this tab's name change.
+            </p>
+            <div class="playground-actions">
+                <input placeholder="New page title..." data-en-placeholder="Type new title..." data-hu-placeholder="új oldal cím..." id="ujize">
+                <button onclick="changePageTitle()" data-en="Apply" data-hu="Alkalmaz">Apply</button>
+            </div>
         </div>
 
         <div class="playground-card">
             <h2 data-en="Interactive Replier" data-hu="Interaktív Válaszadó">Interactive Replier</h2>
+            <p class="playground-desc" data-en="Type a word or phrase, then click the button to get a playful reply."
+                data-hu="Írj be egy szót vagy kifejezést, majd kattints a gombra egy játékos válaszért.">
+                Type a word or phrase, then click the button to get a playful reply.
+            </p>
             
-            <div id="greet-en">
+            <div id="greet-en" class="replier-block">
                 <p>I <input placeholder="love..." id="masolat1"> you!</p>
-                <button onclick="message1()">Click Me!</button>
             </div>
 
-            <div id="greet-hu" class="hidden">
+            <div id="greet-hu" class="replier-block hidden">
                 <p>Én <input placeholder="szeretlek..." id="masolat2"> téged!</p>
-                <button onclick="message2()">Nyomj meg!</button>
+            </div>
+
+            <div class="replier-actions">
+                <button id="greet-btn-en" onclick="message1()">Click Me!</button>
+                <button id="greet-btn-hu" class="hidden" onclick="message2()">Nyomj meg!</button>
             </div>
         </div>
 
         <div class="playground-card">
-            <h2 data-en="Logic Engine" data-hu="Logikai Motor">Logic Engine</h2>
+            <h2 data-en="Tiny HTML Calculator" data-hu="Mini HTML Számológép">Tiny HTML Calculator</h2>
             <div class="calc-row">
-                <input style="width: 60px;" id="a5" type="number"> <span>+</span>
-                <input style="width: 60px;" id="b5" type="number">
+                <input style="width: 60px;" id="a5" type="number" value="0"> <span>+</span>
+                <input style="width: 60px;" id="b5" type="number" value="0">
                 <button onclick="calc('+', 'a5', 'b5', 'result5')">=</button>
                 <button class="result-btn" id="result5" disabled>0</button>
             </div>
             <div class="calc-row">
-                <input style="width: 60px;" id="a6" type="number"> <span>-</span>
-                <input style="width: 60px;" id="b6" type="number">
+                <input style="width: 60px;" id="a6" type="number" value="0"> <span>-</span>
+                <input style="width: 60px;" id="b6" type="number" value="0">
                 <button onclick="calc('-', 'a6', 'b6', 'result6')">=</button>
                 <button class="result-btn" id="result6" disabled>0</button>
             </div>
             <div class="calc-row">
-                <input style="width: 60px;" id="a7" type="number"> <span>×</span>
-                <input style="width: 60px;" id="b7" type="number">
+                <input style="width: 60px;" id="a7" type="number" value="0"> <span>×</span>
+                <input style="width: 60px;" id="b7" type="number" value="0">
                 <button onclick="calc('*', 'a7', 'b7', 'result7')">=</button>
                 <button class="result-btn" id="result7" disabled>0</button>
             </div>
             <div class="calc-row">
-                <input style="width: 60px;" id="a8" type="number"> <span>÷</span>
-                <input style="width: 60px;" id="b8" type="number">
+                <input style="width: 60px;" id="a8" type="number" value="0"> <span>÷</span>
+                <input style="width: 60px;" id="b8" type="number" value="0">
                 <button onclick="calc('/', 'a8', 'b8', 'result8')">=</button>
                 <button class="result-btn" id="result8" disabled>NaN</button>
             </div>
@@ -79,7 +96,7 @@
 
         <div class="playground-card">
             <h2 data-en="Emoji Hub" data-hu="Emoji Központ">Emoji Hub</h2>
-            <h3 data-en="Click to copy, paste below to test:" data-hu="Másoláshoz kattints, teszteléshez illeszd be:">Click to copy, paste below to test:</h3>
+            <h3 data-en="Click an emoji to copy it, then paste into the box below to test it." data-hu="Kattints egy emojira a másoláshoz, majd illeszd be az alábbi mezőbe a teszteléshez.">Click an emoji to copy it, then paste into the box below to test it.</h3>
             <input style="width: 90%; margin-bottom: 15px;" type="text" placeholder="Ctrl + V here">
             
             <div class="emoji-grid">
@@ -213,9 +230,14 @@
         document.querySelectorAll('[data-en-placeholder]').forEach(el => {
             el.placeholder = el.getAttribute('data-hu-placeholder');
         });
+        document.querySelectorAll('[data-hu-title]').forEach(el => {
+            el.title = el.getAttribute('data-hu-title');
+        });
         document.title = "Web Tech Játszótér";
         document.getElementById('greet-en')?.classList.add('hidden');
         document.getElementById('greet-hu')?.classList.remove('hidden');
+        document.getElementById('greet-btn-en')?.classList.add('hidden');
+        document.getElementById('greet-btn-hu')?.classList.remove('hidden');
         document.querySelectorAll('.lang-option').forEach(opt => {
             opt.classList.toggle('active', opt.dataset.lang === 'hu');
         });
@@ -241,9 +263,15 @@
         document.querySelectorAll('[data-en-placeholder]').forEach(el => {
             el.placeholder = el.getAttribute(`data-${currentLang}-placeholder`);
         });
+        document.querySelectorAll('[data-en-title]').forEach(el => {
+            const title = el.getAttribute(`data-${currentLang}-title`);
+            if (title) el.title = title;
+        });
         document.title = translatedTitle;
         document.getElementById('greet-en').classList.toggle('hidden', currentLang !== 'en');
         document.getElementById('greet-hu').classList.toggle('hidden', currentLang !== 'hu');
+        document.getElementById('greet-btn-en').classList.toggle('hidden', currentLang !== 'en');
+        document.getElementById('greet-btn-hu').classList.toggle('hidden', currentLang !== 'hu');
         document.querySelectorAll('.lang-option').forEach(opt => opt.classList.toggle('active'));
     });
 
