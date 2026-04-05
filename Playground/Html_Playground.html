@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
     <title data-en="Web Tech Playground" data-hu="Web Tech Játszótér">Web Tech Playground</title>
     
     <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
@@ -10,7 +11,7 @@
     <link rel="stylesheet" href="../styles/playground.css">
     <link rel="stylesheet" href="../styles/backtotop.css">
 </head>
-<body>
+<body class="notranslate">
     <div class="container">
         <button id="langToggle" class="lang-toggle" aria-label="Toggle language">
             <span class="lang-option active" data-lang="en">EN</span>
@@ -31,7 +32,7 @@
 
         <div class="playground-card">
             <h2 data-en="Dynamic Page Header" data-hu="Dinamikus Oldalfejléc">Dynamic Page Header</h2>
-            <p class="playground-desc"
+            <p id="titleChangerDescription" class="playground-desc"
                 data-en="Type a new title, hit Apply, and watch this tab's name change."
                 data-hu="Írj be egy új címet, nyomd meg az Alkalmaz gombot, és figyeld, ahogy megváltozik a böngészőfül neve."
                 title="Something extra: try toggling the language after you set a custom title."
@@ -164,11 +165,14 @@
         </button>
     </div>
 
+    <script src="../scripts/shared-state.js"></script>
     <script>
     // Sync with index page settings from localStorage
     let currentLang = localStorage.getItem('language') || 'en';
-    const darkModeUnlocked = localStorage.getItem('darkModeUnlocked') === 'true';
     const savedTheme = localStorage.getItem('theme') || 'light';
+    const titleChangerDescription = document.getElementById('titleChangerDescription');
+    let titleHintHoverTimerId = null;
+    let titleHintQualifiedThisSession = false;
     
     let charNum = parseInt(localStorage.getItem('unicodeCharNum') || '0', 10);
 
@@ -176,6 +180,8 @@
     if (savedTheme === 'dark') {
         document.body.classList.add('darkmode');
     }
+
+    document.documentElement.lang = currentLang;
     
     // Show theme toggle if unlocked
     const themeToggle = document.getElementById('themeToggle');
@@ -220,10 +226,34 @@
         }
     }
 
+    function startTitleHintHoverTimer() {
+        if (titleHintQualifiedThisSession || titleHintHoverTimerId !== null) {
+            return;
+        }
+
+        titleHintHoverTimerId = window.setTimeout(() => {
+            titleHintQualifiedThisSession = true;
+            titleHintHoverTimerId = null;
+        }, 3600);
+    }
+
+    function stopTitleHintHoverTimer() {
+        if (titleHintHoverTimerId === null) {
+            return;
+        }
+
+        window.clearTimeout(titleHintHoverTimerId);
+        titleHintHoverTimerId = null;
+    }
+
+    titleChangerDescription?.addEventListener('mouseenter', startTitleHintHoverTimer);
+    titleChangerDescription?.addEventListener('mouseleave', stopTitleHintHoverTimer);
+
     const langToggle = document.getElementById('langToggle');
     
     // Apply saved language on load
     if (currentLang === 'hu') {
+        document.documentElement.lang = 'hu';
         document.querySelectorAll('[data-en]').forEach(el => {
             el.textContent = el.getAttribute('data-hu');
         });
@@ -249,6 +279,7 @@
         const oldLang = currentLang;
         currentLang = currentLang === 'en' ? 'hu' : 'en';
         localStorage.setItem('language', currentLang);
+        document.documentElement.lang = currentLang;
         let translatedTitle = document.title;
         if (document.title === "Web Tech Playground" && oldLang === 'en' && currentLang === 'hu') {
             translatedTitle = "Web Tech Játszótér";
@@ -273,6 +304,20 @@
         document.getElementById('greet-btn-en').classList.toggle('hidden', currentLang !== 'en');
         document.getElementById('greet-btn-hu').classList.toggle('hidden', currentLang !== 'hu');
         document.querySelectorAll('.lang-option').forEach(opt => opt.classList.toggle('active'));
+
+        if (typeof refreshEasterEggCounter === 'function') {
+            refreshEasterEggCounter();
+        }
+
+        if (titleHintQualifiedThisSession) {
+            markEasterEggFound(
+                window.easterEggStorageKeys.playgroundTranslationFound,
+                window.easterEggStorageKeys.playgroundTranslationFoundAt,
+                lang => lang === 'en'
+                    ? 'Easter egg megtalálva: a címfordítás felfedezve.'
+                    : 'Easter egg found: Title translation discovered.'
+            );
+        }
     });
 
     function changePageTitle() {

@@ -117,4 +117,8 @@ async function setLanguage(lang) {
     if (typeof updateMiniGameLanguage === 'function') {
         updateMiniGameLanguage(lang);
     }
+
+    if (typeof refreshEasterEggCounter === 'function') {
+        refreshEasterEggCounter();
+    }
 }

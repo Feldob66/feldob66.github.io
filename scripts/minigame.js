@@ -466,12 +466,8 @@ document.querySelectorAll('#code-mode-container .executeBtn').forEach(btn => {
                     const isDark = document.body.classList.contains('darkmode');
                     localStorage.setItem('theme', isDark ? 'dark' : 'light');
 
-                    // Unlock dark mode toggle on first toggle via minigame
                     if (!darkModeUnlocked) {
-                        darkModeUnlocked = true;
-                        localStorage.setItem('darkModeUnlocked', 'true');
-                        const themeToggle = document.getElementById('themeToggle');
-                        themeToggle?.classList.remove('hidden');
+                        unlockDarkModeEasterEgg();
                     }
 
                     consoleEl.innerText = texts[lang].darkMode;
@@ -724,12 +720,8 @@ document.querySelectorAll('#visual-mode-container .executeBtn').forEach(btn => {
                 const isDark = document.body.classList.contains('darkmode');
                 localStorage.setItem('theme', isDark ? 'dark' : 'light');
 
-                // Unlock dark mode toggle on first toggle via minigame
                 if (!darkModeUnlocked) {
-                    darkModeUnlocked = true;
-                    localStorage.setItem('darkModeUnlocked', 'true');
-                    const themeToggle = document.getElementById('themeToggle');
-                    themeToggle?.classList.remove('hidden');
+                    unlockDarkModeEasterEgg();
                 }
 
                 consoleEl.innerText = texts[lang].darkMode;
